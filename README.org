@@ -1,0 +1,7 @@
+* Pic midrange code
+Helper functions for
+- waiting
+- LCD connection (HW setup inside)
+- eeprom access
+
+and demo for LCD printing 
