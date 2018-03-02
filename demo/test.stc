@@ -1,21 +1,17 @@
 load p16f630 lcdn.hex
 
-scope.ch0 = "portc0"
-scope.ch1 = "portc1"
-scope.ch2 = "portc2"
-scope.ch3 = "portc3"
-scope.ch4 = "portc4"
-scope.ch5 = "portc5"
-scope.ch6 = "porta2"
+scope.ch0 = "porta5"
+scope.ch1 = "porta2"
 # break e 0x3a
 load e p16f630 mem.hex
-node d7 d6 d5 d4
+node d7 d6 d5 d4 temp
 node enable rs rw gnd
 
 module library libgpsim_extras
 module library libgpsim_modules
 module load lcd_2X20 lcd
-module load pd down
+module load DS18B20 teplomer
+module load pu pullup
 attach d7 portc0 lcd.d7
 attach d6 portc1 lcd.d6
 attach d5 portc2 lcd.d5
@@ -23,8 +19,8 @@ attach d4 portc3 lcd.d4
 attach enable portc4 lcd.E
 attach rs porta2 lcd.DC
 attach rw portc5 lcd.RW
-attach gnd down.pin lcd.d0 lcd.d1 lcd.d2 lcd.d3
-stimulus asy period 500 {200, 0, 300, 1} name pulse end
-node stim
-attach stim pulse porta5
+attach gnd lcd.d0 lcd.d1 lcd.d2 lcd.d3
+# alternatively, remove teplomer.pin to check error handling
+attach temp porta5 teplomer.pin pullup.pin
 run
+step 1000000

@@ -1,10 +1,11 @@
+;;;  -*- mode:pic-asm -*-
         list p=16F630,t=ON,c=132,n=80
         title "lcd module test"
         radix DEC
         include "p16f630.inc"
 
 	global init_lcd
-	extern put_reg_indf, wait_1
+	extern put_reg_indf, mswait
 	extern short_wait, print_from_prom
 	extern emit_w_nibble
 
@@ -12,7 +13,7 @@ RS:	equ 2			; on porta
 
 	code
 wait_and_reset:
-        call wait_1
+        call mswait
 send_reset:
         movlw   0x30            ; set 8bit
         goto emit_w_nibble
@@ -29,12 +30,11 @@ init_lcd:
         call    short_wait
         call    send_reset
         movlw   0x3
-        call    wait_1
+        call    mswait
         movlw   0x20            ; set 4bit
         call emit_w_nibble
         movlw   LOW(initcode)
         goto print_from_prom
-
 
 DEEPROM code
 initcode:

@@ -1,4 +1,4 @@
-;; -*- coding: utf-8 -*-
+;; -*- mode:pic-asm; coding: utf-8 -*-
         list p=16F630,t=ON,c=132,n=80
         title "lcd module test"
         radix DEC
@@ -43,17 +43,17 @@
 ;;                                                ┗━ Vss  │ 1          │
 ;;                                                        └────────────┘
 
-RS:	equ 2			; on porta
+RS	equ 2			; on porta
 	;; actually, we do not read RW yet...
-RW:	equ 5			; on portc
-ENABLE:	equ 4			; on portc
+RW	equ 5			; on portc
+ENABLE	equ 4			; on portc
 
         global send_command, slow_shift_right, put_reg
-	global put_reg_indf, put
+	global put_reg_indf, put_char
 	global emit_w_nibble
 	global print_text_from_prom, print_from_prom
 
-	extern wait_1
+	extern mswait
 	extern eeprom_at, eeprom_getchar
 
         udata_shr
@@ -69,25 +69,25 @@ nibble:
 put_reg:
         ;; Put to screen content of a register addressed by W
         movwf FSR
-put_reg_indf
-        swapf INDF, W
+put_reg_indf:
+	swapf INDF, W
         call put_nibble
-        movf INDF, W
+	movf INDF, W
 put_nibble:
         ;; Convert nibble to ascii and put to the screen
         andlw   0xf
         addlw   0xf6
-        btfsc   STATUS, C
+	btfsc   STATUS, C
         addlw   0x7
         addlw   0x3a
 put_char:
         ;; put a char in W to the screen
-        bsf     PORTA, RS
+        bsf PORTA, RS
 put:
         ;; send a char or command in W to screen in two 4bit parts
         movwf   nibble
         movlw   0x3
-        call    wait_1
+        call    mswait
         call    push_high_nibble
 	goto    push_high_nibble
 
@@ -105,7 +105,7 @@ push_high_nibble:
         ;; same instruction count as andlw/iorlw
         call rotate_2bit
         call rotate_2bit
-        swapf   scratch, w
+        swapf scratch, w
         andlw   0xf
         iorlw   (1<<ENABLE)
         movwf   PORTC
@@ -121,7 +121,7 @@ rotate_bit:
 ;;; Simple commands
 slow_shift_right:
         movlw   0
-        call    wait_1
+        call    mswait
         movlw   0x1c
 send_command:
         bcf     PORTA, RS

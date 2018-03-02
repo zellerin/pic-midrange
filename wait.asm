@@ -1,9 +1,10 @@
+;;;  -*- mode:pic-asm -*-
         list p=16F630,t=ON,c=132,n=80
         title "lcd module test"
         radix DEC
         include "p16f630.inc"
 
-	global wait_1, short_wait
+	global mswait, short_wait
 
 	udata_shr
 duration:
@@ -11,7 +12,7 @@ duration:
         res .1
 
 	code
-wait_1:
+mswait:
         ;; wait about W*(256*3+2+8) ops
 	;; i.e. about W*778 µsec on 4Mhz
         clrf    duration
@@ -19,7 +20,7 @@ wait_1:
         addlw   0xff
         btfsc   STATUS, Z
         return
-        goto    wait_1
+        goto    mswait
 short_wait:
 	;; burn duration*3+2 ops
 	;; on 4Mhz, op is 1 µsec

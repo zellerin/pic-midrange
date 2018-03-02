@@ -1,3 +1,4 @@
+;;; -*- mode:pic-asm -*-
         list p=16F630,t=ON,c=132,n=80
         title "lcd module test"
         radix DEC
@@ -20,6 +21,4 @@ eeprom_getchar:	; ? -> [EEADR] ; increase EEADR
         movf    EEDAT, w
         bcf     STATUS, RP0 ;; bank 0
 	return
-
-
 	end
