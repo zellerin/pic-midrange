@@ -13,15 +13,14 @@ and demo for LCD printing
 #+BEGIN_SRC lisp
   (loop
    with res = (make-array 256 :element-type '(unsigned-byte 8) :fill-pointer 0)
+   and src = (intel-hex:read-hex-from-file 128000 "demo/lcdn.hex")
    for use in '#1=(t nil . #1#)
-  for val across
-		(make-array 256
-			    :displaced-to (intel-hex:read-hex-from-file 128000 "~/src/bastleni/lcd-in-pic/demo/lcdn.hex")
-			    :displaced-index-offset #x4200 :element-type '(unsigned-byte 8))
-	when use do (vector-push-extend val res)
-	  finally 
-	  (intel-hex:write-hex-to-file res  "~/src/bastleni/lcd-in-pic/demo/mem.hex"
-             :if-exists :supersede))
+   for i from #x4200 to #x42ff
+   for val = (aref src i)
+   when use do (vector-push-extend val res)
+   else do (assert (zerop val))
+   finally 
+   (intel-hex:write-hex-to-file res "demo/mem.hex" :if-exists :supersede))
 #+END_SRC
 
 #+RESULTS:

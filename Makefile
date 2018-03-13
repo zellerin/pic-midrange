@@ -17,7 +17,7 @@ utils.a(%.o): %.o
 	gpasm -c $<
 
 run:
-	~/staging/pickit/pk2cmdv1.20LinuxMacSource/pk2cmd /PPIC16F630 /T /R /Fdemo/lcdn.hex
+	~/staging/pickit/pk2cmdv1.20LinuxMacSource/pk2cmd /PPIC16F630 /T /R
 
 program:
 	~/staging/pickit/pk2cmdv1.20LinuxMacSource/pk2cmd /PPIC16F630 /T /R /Fdemo/lcdn.hex /M

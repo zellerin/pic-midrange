@@ -21,6 +21,5 @@ attach rs porta2 lcd.DC
 attach rw portc5 lcd.RW
 attach gnd lcd.d0 lcd.d1 lcd.d2 lcd.d3
 # alternatively, remove teplomer.pin to check error handling
-attach temp porta5 teplomer.pin pullup.pin
-run
+attach temp porta5 pullup.pin teplomer.pin
 step 1000000
