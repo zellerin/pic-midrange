@@ -48,17 +48,17 @@ temp_byte:
 ;;; complete start
 init:
 	movlw 7
-	movwf   CMCON
+	movwf CMCON
 ;	clrf TMR1H
 ;	clrf TMR1L
 	clrf PORTA
 	clrf PORTC
-;;; Let us try if pull-up is sufficient for the 1wire communication:
+;;; Pull-up is sufficient for the 1wire communication:
 ;;; clear bit 7 of OPTION_REG (RAPU), set WPUA pin 5
 ;;; current is 50-250-500 uA at 5V
+	bsf STATUS, RP0	;bank 1
 	bcf OPTION_REG, 7 	; RAPU
 	bsf WPUA, 5		; pull up
-	bsf STATUS, RP0	;bank 1
 	movlw 0x3b 	; pin2 is out, rest in
 	movwf TRISA ^ 0x80
 	clrf TRISC ^ 0x80	; all out
@@ -105,7 +105,7 @@ do_error:
 	
 DEEPROM code
 temperature:
-	de "Temperature: \0"
+	de "Temp: \0"
 error_text:
 	de "Error: \0"
 	end

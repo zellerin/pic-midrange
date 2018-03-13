@@ -11,7 +11,6 @@ module library libgpsim_extras
 module library libgpsim_modules
 module load lcd_2X20 lcd
 module load DS18B20 teplomer
-module load pu pullup
 attach d7 portc0 lcd.d7
 attach d6 portc1 lcd.d6
 attach d5 portc2 lcd.d5
@@ -21,5 +20,5 @@ attach rs porta2 lcd.DC
 attach rw portc5 lcd.RW
 attach gnd lcd.d0 lcd.d1 lcd.d2 lcd.d3
 # alternatively, remove teplomer.pin to check error handling
-attach temp porta5 pullup.pin teplomer.pin
+attach temp porta5  teplomer.pin
 step 1000000
