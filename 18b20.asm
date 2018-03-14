@@ -11,19 +11,24 @@
 PIN	equ 5
 PIN_MASK equ 1<<5
 
+;;; Dallas commands used (see datasheet for list)
+CMD_CONVERT_T 		equ 0x44
+CMD_READ_SCRATCHPAD 	equ 0xbe
+CMD_SKIP_ROM		equ 0xcc
+
 	code
 read_temperature:
 	;; measure temperature and return it in stack, MSB on top.
-	movlw 0x44		;convert T
+	movlw CMD_CONVERT_T
 	call do_command
 	call wait_for_done	; takes almost a second; maybe we can sleep a bit?
-	movlw 0xbe		; read scratchpad
+	movlw CMD_READ_SCRATCHPAD
 	call do_command
 	call read_byte	; read LSB
 	incf FSR, F
 	;; read MSB now
 read_byte:
-	;; read one byte and return it in W
+	;; read one byte and return it in INDF
 	call read_nibble
 read_nibble:
 	call read_2bit
@@ -31,6 +36,7 @@ read_2bit:
 	call read_bit
 read_bit:
 	call before_read_bit
+	;; moving pin value to C is harder than expected
 	movf PORTA, W
 	andlw PIN_MASK
 	addlw 256-PIN_MASK
@@ -79,12 +85,12 @@ do_command:
 	;; followup data exchange.
 	call stack_push
 	call init
-	movlw 0xcc 		; skip rom
+	movlw CMD_SKIP_ROM
 	movwf INDF
 	call send_cmd
 	decf FSR, F
 send_cmd:
-	; send octet on top of stack
+	; send octet in INDF
 	call send_nibble
 send_nibble:
 	call send_2bit
