@@ -15,7 +15,7 @@
 	extern put_char
 	extern put_reg_indf, mswait
 
-	extern stack_init,stack_push, stack_pop, stack_save,stack_restore, stack_saved
+	extern stack_init,stack_push, stack_pop
 
 	extern read_temperature
 	
