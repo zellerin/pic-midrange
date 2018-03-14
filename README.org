@@ -3,12 +3,16 @@ Helper functions for
 - waiting
 - LCD connection (HW setup inside)
 - eeprom access
+- Dallas interface
 
-and demo for LCD printing 
+and demo for LCD printing and temperature measurement using Dallas
+chip.
 * Conventions
 - INDF can be used by any procedure to store local data, but it is
   responsible for its callees to be able to do so as well.
 - W is used for parameters passing, usually (what else?)
+- I use several calls instead of 8x loops. It is shorter. Negative
+  side is that stack depth needs to be taken into account
 * GPsim needs to create eeprom file
 #+BEGIN_SRC lisp
   (loop
