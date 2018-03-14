@@ -1,17 +1,20 @@
 all: utils.a
+PICLIBS=lcd-init.o wait.o eeprom.o
+PICLIBS+=lcd.o stack.o 18b20.o
 
 demo: demo/lcdn.hex
 
 sim: demo
 	gpsim demo/test.stc
 
+clean:
+	rm -f *.o *.a demo/lcdn.hex
+
 %.hex: %.o utils.a
 	gplink -o $@ -c $^
 
-utils.a:  utils.a(lcd-init.o wait.o eeprom.o lcd.o stack.o 18b20.o)
-
-utils.a(%.o): %.o
-	if [[ -f utils.a ]]; then gplib -r utils.a $< ; else gplib -c utils.a $< ; fi
+utils.a: $(PICLIBS)
+	gplib -c utils.a $^
 
 %.o: %.asm
 	gpasm -c $<
