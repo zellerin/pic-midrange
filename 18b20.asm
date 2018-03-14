@@ -111,5 +111,5 @@ wait_480:
 	goto short_wait
 DEEPROM code
 err_no_dallas:
-	de "No DS18B20 detected\0"
+	de "No DS18B20\0"
         end
