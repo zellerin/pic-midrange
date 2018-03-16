@@ -163,7 +163,12 @@
        (concat "gpasm -c "
 	       (if buffer-file-name
 		   (shell-quote-argument
-		    buffer-file-name)))))
+		    buffer-file-name))))
+  (setq ff-other-file-alist '((".asm" (".inc")))
+	ff-search-directories '("." "/usr/share/gputils/header")
+	ff-special-constructs '(("\\s *include\\s \"\\([^\"]*\\)" .
+				  (lambda () (buffer-substring (match-beginning 1)
+							       (match-end 1)))))))
 
 (bind-key (kbd "C-c C-c") 'compile pic-asm-mode-map)
 
