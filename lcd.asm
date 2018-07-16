@@ -48,14 +48,7 @@ RS	equ 2			; on porta
 RW	equ 5			; on portc
 ENABLE	equ 4			; on portc
 
-        global send_command, slow_shift_right, put_reg
-	global put_reg_indf, put_char
-	global emit_w_nibble
-	global print_text_from_prom, print_from_prom
-
 	extern mswait
-	extern eeprom_at, eeprom_getchar
-
         udata_shr
 scratch:
         ;; used by nibble rotating things
@@ -66,6 +59,7 @@ nibble:
 
         code
 ;;; Putting things to LCD
+	global put_reg, put_reg_indf, put_char
 put_reg:
         ;; Put to screen content of a register addressed by W
         movwf FSR
@@ -91,6 +85,7 @@ put:
         call    push_high_nibble
 	goto    push_high_nibble
 
+	global emit_w_nibble
 emit_w_nibble:
 	movwf   nibble
 push_high_nibble:
@@ -119,6 +114,7 @@ rotate_bit:
         return
 
 ;;; Simple commands
+        global send_command, slow_shift_right
 slow_shift_right:
         movlw   0
         call    mswait
@@ -128,6 +124,8 @@ send_command:
         goto    put
 
 ;;; Multi-octet commands
+	global print_text_from_prom, print_from_prom
+	extern eeprom_at, eeprom_getchar
 print_text_from_prom:
         bsf  PORTA, RS
 print_from_prom:
@@ -140,6 +138,5 @@ print_next:
         call put
 	call eeprom_getchar
         goto print_next
-
 
         end
