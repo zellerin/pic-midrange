@@ -4,9 +4,19 @@
         radix DEC
         include "p16f630.inc"
 
-	global eeprom_at, eeprom_getchar
+	global eeprom_at, eeprom_getchar, eeprom_print
+	extern eeprom_put_fn
 	code
 ;;;
+eeprom_print:
+        ;; Call eeprom_put_fn for bytes from prom until 0 is seen
+	call eeprom_at
+print_next:
+        btfsc STATUS, Z
+        return
+        call eeprom_put_fn
+	call eeprom_getchar
+        goto print_next
 
 eeprom_at: ; E -> [E];  EEADR = E+1
         ;; Read content of eeprom from address.

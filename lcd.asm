@@ -77,6 +77,8 @@ put_nibble:
 put_char:
         ;; put a char in W to the screen
         bsf PORTA, RS
+	global eeprom_put_fn
+eeprom_put_fn:			; callback for print_from_prom
 put:
         ;; send a char or command in W to screen in two 4bit parts
         movwf   nibble
@@ -124,19 +126,9 @@ send_command:
         goto    put
 
 ;;; Multi-octet commands
-	global print_text_from_prom, print_from_prom
-	extern eeprom_at, eeprom_getchar
+	global print_text_from_prom
+	extern eeprom_at, eeprom_getchar, eeprom_print
 print_text_from_prom:
         bsf  PORTA, RS
-print_from_prom:
-        ;; Put bytes from prom until 0 is seen
-	;; it can be commands or data, up to caller to set RS.
-	call eeprom_at
-print_next:
-        btfsc STATUS, Z
-        return
-        call put
-	call eeprom_getchar
-        goto print_next
-
+	goto eeprom_print
         end

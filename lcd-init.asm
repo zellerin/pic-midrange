@@ -6,7 +6,7 @@
 
 	global init_lcd
 	extern put_reg_indf, mswait
-	extern short_wait, print_from_prom
+	extern short_wait, eeprom_print
 	extern emit_w_nibble
 
 RS:	equ 2			; on porta
@@ -34,7 +34,7 @@ init_lcd:
         movlw   0x20            ; set 4bit
         call emit_w_nibble
         movlw   LOW(initcode)
-        goto print_from_prom
+        goto eeprom_print
 
 DEEPROM code
 initcode:
