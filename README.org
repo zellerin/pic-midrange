@@ -4,7 +4,7 @@ Helper functions for
 - LCD connection (HW setup inside)
 - eeprom access
 - Dallas interface
-
+- Serial
 and demo for LCD printing and temperature measurement using Dallas
 chip.
 * Conventions
