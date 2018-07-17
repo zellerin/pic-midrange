@@ -156,11 +156,14 @@
 	    (,pic-asm-constants nil nil
 			 (0 font-lock-constant-face)))))))
 
+(defcustom pic-asm-compile "gpasm -c"
+  "Command to run to compile by default. File name is added.")
+
 ;;;###autoload
 (define-derived-mode pic-asm-mode asm-mode "Pic asm"
   (pic-asm-fontify)
   (set (make-local-variable 'compile-command)
-       (concat "gpasm -c "
+       (concat pic-asm-compile " "
 	       (if buffer-file-name
 		   (shell-quote-argument
 		    buffer-file-name))))
