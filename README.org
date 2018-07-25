@@ -29,3 +29,39 @@ chip.
 
 #+RESULTS:
 : NIL
+* Testing uart with 12f675 on a breadboard
+
+Pickit2 was used for programming, serial to usb module to read output.
+
+
+#+CAPTION: Schematics (breadboard)
+#+BEGIN_SRC text
+   Serial                          ICSP
+   module
+           . . . . .   . 1 . . +-- MCLR
+           . . . . .   . 2 . . +-- Vdd
+    Vdd    . . . 2 +-v-+ 3 . . +-- GND
+  DTR/GP5  . . . . +   + . . . +-- GP0/ICSPDAT
+  RXI/GP4  . . . . +   + . . . +-- GP1/ICSPCLK
+  TXD/MCLR . 1 . . +---+ . . . +-- GP2/AUX
+    GND    . . . 3 .   . . . . .
+   5V/NC   . . . . .   . . . . .
+           . . . . .   . . . . .
+#+END_SRC
+
+Results and notes:
+- MPLAB fails to save config word
+- With PK2CMD it an be saved:
+ #+BEGIN_SRC shell :dir ~/staging/pickit/pk2cmdv1.20LinuxMacSource/ :results org
+./pk2cmd -P -M -F/opt/compressed/git/lcd-in-pic/demo/uart-demo.hex
+#+END_SRC
+- Serial term produces garbage unless calibrated (pulse is is 5.6us on scope, not 8)
+  #+BEGIN_SRC elisp :var port="/dev/ttyUSB0" :results none
+(serial-term port 115200)
+(term-line-mode)
+#+END_SRC
+- Three wires required
+- Tried with and without a decoupling capacitor, does not matter for this.
+- Pickit2 needs 5 or 6pin male-male cable to use on the breadboard
+- Scope is handy if you know what you want to see
+- I could probably get away with 9 instructions per pulse, with proper OSCCAL.

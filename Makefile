@@ -1,12 +1,13 @@
 all: utils.a
 PICLIBS=lcd-init.o wait.o eeprom.o
-PICLIBS+=lcd.o stack.o 18b20.o serial/115k.o
+PICLIBS+=lcd.o stack.o 18b20.o serial/115k.o put-reg.o
 
 
-demos: demo uart-demo
+demos: demo uart-demo temp-serial
 demo: demo/lcdn.hex
 
 uart-demo: demo/uart-demo.hex
+temp-serial: demo/temp-serial.hex
 
 sim: demo
 	gpsim demo/test.stc

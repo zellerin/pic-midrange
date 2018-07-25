@@ -1,8 +1,8 @@
-load p16f630 uart-demo.hex
+load p12f675 uart-demo.hex
 
-load e p16f630 hello.hex
+load e p12f675 hello.hex
 
-scope.ch0 = "porta4"
+scope.ch0 = "gpio4"
 # break w porta
 
 module library libgpsim_extras
@@ -12,5 +12,5 @@ serial.rxbaud=115200
 node serialout
 
 # alternatively, remove teplomer.pin to check error handling
-attach serialout porta4 serial.RXPIN
+attach serialout gpio4 serial.RXPIN
 step 1000
