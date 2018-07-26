@@ -14,6 +14,9 @@ chip.
 - I use several calls instead of 8x loops. It is shorter. Negative
   side is that stack depth needs to be taken into account
 * GPsim needs to create eeprom file
+Apparently, gpsim is not able to use programming hex file content to
+populate EEPROM. This is workaround to prepare special file.
+
 #+BEGIN_SRC lisp
   (loop
    with res = (make-array 256 :element-type '(unsigned-byte 8) :fill-pointer 0)
@@ -28,11 +31,10 @@ chip.
 #+END_SRC
 
 #+RESULTS:
-: NIL
-* Testing uart with 12f675 on a breadboard
+
+* 115200 bit-banged uart with 12f675 on a breadboard
 
 Pickit2 was used for programming, serial to usb module to read output.
-
 
 #+CAPTION: Schematics (breadboard)
 #+BEGIN_SRC text
