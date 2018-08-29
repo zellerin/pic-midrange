@@ -1,0 +1,7 @@
+*.o
+*.lst
+*.co[fd]
+*.lst
+*.a
+*.map
+main.hex

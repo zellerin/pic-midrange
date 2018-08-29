@@ -1,15 +1,12 @@
 ;;;  -*- mode:pic-asm -*-
-        list p=16F630,t=ON,c=132,n=80
+        include "config.h"
         title "lcd module test"
         radix DEC
-        include "p16f630.inc"
 
 	global init_lcd
 	extern put_reg_indf, mswait
 	extern short_wait, eeprom_print
 	extern emit_w_nibble
-
-RS:	equ 2			; on porta
 
 	code
 wait_and_reset:

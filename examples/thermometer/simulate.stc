@@ -1,0 +1,46 @@
+load s sim.cod
+
+scope.ch0 = "gpio0"
+scope.ch1 = "gpio4"
+
+load e p12f675 mem.hex
+
+node g0
+node g4
+node g5
+node thermo
+node reset
+
+module library libgpsim_extras
+module library libgpsim_modules
+module load DS18B20 teplomer
+module load usart usart
+module load sw switch
+# alternatively, remove teplomer.pin to check error handling
+
+
+attach g5 gpio5 usart.TXPIN
+attach g4 gpio4 usart.RXPIN
+attach g0 gpio0 switch.B
+attach thermo teplomer.pin switch.A
+
+p12f629.xpos = 84
+p12f629.ypos = 156
+
+teplomer.temperature = 25
+teplomer.xpos = 324
+teplomer.ypos = 168
+
+usart.rxbaud=115200
+usart.xpos = 96
+usart.ypos = 252
+
+switch.xpos = 216
+switch.ypos = 168
+switch.state=closed
+
+break e main_loop
+run
+run
+switch.state=open
+step 2500

@@ -1,8 +1,7 @@
 ;;; -*- mode:pic-asm -*-
-        list p=16F630,t=ON,c=132,n=80
+        include "config.h"
         title "lcd module test"
         radix DEC
-        include "p16f630.inc"
 
 	global eeprom_at, eeprom_getchar, eeprom_print
 	extern eeprom_put_fn

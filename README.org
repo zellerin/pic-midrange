@@ -1,18 +1,71 @@
-* Pic midrange code
-Helper functions for
+* Repository content
+  :PROPERTIES:
+  :ID:       02537579-ef66-46eb-80f0-be6b2e0582d7
+  :END:
+The repository contains some helper functions for
 - waiting
-- LCD connection (HW setup inside)
+- LCD connection (HW setup partly fixed)
 - eeprom access
-- Dallas interface
-- Serial
-and demo for LCD printing and temperature measurement using Dallas
-chip.
+- Dallas 18b20 interface (any pin, two wire connection not supported)
+- Serial 115k communication (any pin)
+The functions are designed for 12f675 and 16f630. They may work on other processors as well.
+
+**************** TODO Add check for processor into library functions
+**************** TODO List/generate functions (grep global?) and their documentation
+
+The repository also contains some demos that uses them:
+- [[./examples/uart][uart]] :: Print text to serial port at 115k (12f675 chip)
+- [[./examples/thermometer][thermometer]] :: Read temperature from 18b20 and print it to the serial port (12f675 chip)
+- [[./examples/lcd][lcd]] :: Read temperature from 18b20 and print it to the LCD (16f630 chip)
+
+The demos support both gpsim (tested often) and live hardware (tested sometimes).
+
 * Conventions
-- INDF can be used by any procedure to store local data, but it is
-  responsible for its callees to be able to do so as well.
-- W is used for parameters passing, usually (what else?)
-- I use several calls instead of 8x loops. It is shorter. Negative
-  side is that stack depth needs to be taken into account
+** File structure
+Library code is in small files stored under =./library=, sometimes under
+subdirectories. Each file reads "config.h"; the project is expected to
+setup this file to define processor and needed pins/variables.
+
+Each of the individual demos compiles the files to its local =./obj=
+directory with proper settings of parameters.
+
+Individual demos have relatively fixed structure so that Makefile
+template can be used:
+- Core file is main.asm compiled to main.hex (for programming) and sim.cod (for gpsim)
+- The gpsim script simulate.stc defines how to simulate.
+- =config.h= defines pins locations and other constants needed by the
+  library, possibly including ASCII image with connections. If the
+  chip has =GPIO/TRISIO= and not =PORTA/TRISA=, these need to be ~equ~-ed.
+- =Makefile= that calls common =Makefile= and defines libraries to include.
+
+** Assembler Conventions
+ - INDF can be used by any procedure to store local data, but it is
+   responsible for its callees to be able to do so as well.
+ - W is used for parameters passing, usually (what else?)
+ - I use several calls instead of 8x loops. It is shorter. Negative
+   side is that program stack depth needs to be taken into account
+ - In libraries, =PORTA= is used, even
+* Data Stack functions and macros
+ : origin:  ... NEXT | INDF  |
+ : push:    ... NEXT |  W  | INDF=W |
+ : pop:     ... NEXT | <unused old INDF> ; W = INDF
+ : alloc:   ... NEXT | INDF | New INDF ; W unchanged
+
+ - =stack_push= :: implements with some error checking.
+   #+BEGIN_SRC asm
+	 movwf INDF
+	 incf FSR, f
+	 movwf INDF ; not intentional, but destroy W is alternative
+ #+END_SRC
+
+
+ - =stack_pop= :: implements with some error checking.
+   #+BEGIN_SRC asm
+  	 decf FSR, f
+	 movf INDF, w
+   #+END_SRC
+ 
+* GPsim 
 * GPsim needs to create eeprom file
 Apparently, gpsim is not able to use programming hex file content to
 populate EEPROM. This is workaround to prepare special file.
@@ -67,3 +120,35 @@ Results and notes:
 - Pickit2 needs 5 or 6pin male-male cable to use on the breadboard
 - Scope is handy if you know what you want to see
 - I could probably get away with 9 instructions per pulse, with proper OSCCAL.
+
+* Calibration troubles
+Calibration of osccal is necessary for finer timing such as usart. The
+PK2CMD programmer seems to be designed to save instruction on 0x3ff
+address and then write it back - if program memory is
+written. However, the word *may* and *will* get lost at one point of time
+(as with erase without programming) and program will hang soon if the
+=03ff= is called.
+
+** Saving OSCCAL word
+I can read current calibration with 
+
+#+BEGIN_SRC shell :var PICNAME="PIC12F675" pk2cmd="/home/zellerin/staging/pickit/pk2cmdv1.20LinuxMacSource/pk2cmd" :results verbatim :exports both 
+${pk2cmd} /P${PICNAME} /GP0x3ff-0x3ff
+#+END_SRC
+
+#+RESULTS:
+: Program Memory
+: 000003FF 003412  
+
+If you get word starting with 0x34, you are fine. 0x3fff means it was
+cleared out. Anything else is strange.
+
+** Restoring OSCCAL word
+The /U switch can be
+used as =/U3412= with =/M= - note that whole instruction code is
+provided, not just osccal value.
+
+** Finding nice osccal value
+As I did not remember to jot down the value originally, I had to
+improvise. The uart demo varies osccal and prints it out, so what
+works can be seen.

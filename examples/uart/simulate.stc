@@ -1,0 +1,14 @@
+load s sim.cod
+load e p12f675 mem.hex
+
+scope.ch0 = "gpio4"
+# break w porta
+
+module library libgpsim_extras
+module library libgpsim_modules
+
+node serialout
+module load usart serial
+attach serialout gpio4 serial.RXPIN
+serial.rxbaud=115200
+step 5000

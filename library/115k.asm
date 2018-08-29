@@ -1,11 +1,9 @@
 ;; -*- mode:pic-asm; coding: utf-8 -*-
-	list p=16F630
-	title "57600 bitbang uart"
+	title "115k bitbang uart"
 	radix DEC
-	include "p16f630.inc"
+	include "config.h"
 	global uart_put_char
 
-UART_PIN:	equ 4
 UART_PIN_MASK:	equ 1 << UART_PIN
 
 	udata_shr

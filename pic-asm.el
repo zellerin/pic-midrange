@@ -94,10 +94,9 @@
   "Title: "
   (pic-asm-mode)
   ";; -*- mode:pic-asm; coding: utf-8 -*-" ?\n
-  "\tlist p=" (upcase pic-asm-processor) ?\n
+  "\tinclude \"config.h\" " ?\n ?\n
   "\ttitle \"" str "\"" ?\n
   "\tradix DEC" ?\n
-  "\tinclude \"p" pic-asm-processor ".inc\"" ?\n ?\n
   ("equ label: " str "\tequ " (read-string "Value: ") ?\n)
   ?\n
   "\tudata_shr" ?\n

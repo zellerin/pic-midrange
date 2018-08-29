@@ -1,15 +1,15 @@
 ;; -*- mode:pic-asm; coding: utf-8 -*-
-        list p=16F630,t=ON,c=132,n=80
         title "Dallas 18B20 interface"
         radix DEC
-        include "p16f630.inc"
+        include "config.h"
+	include "stack.h"
 
 	global read_temperature
-	extern short_wait, stack_push, stack_pop, do_error
+	extern short_wait, do_error
 
 ;;; Expect single Dallas 18B20 with external power supply on PIN.
-PIN	equ 5
-PIN_MASK equ 1<<5
+PIN	 equ THERMO_PIN
+PIN_MASK equ 1<<PIN
 
 ;;; Dallas commands used (see datasheet for list)
 CMD_CONVERT_T 		equ 0x44
@@ -83,12 +83,12 @@ wait_for_done:
 do_command:
 	;; command is in W. Do the transaction sequence, except
 	;; followup data exchange.
-	call stack_push
+	PUSH ; call stack_push
 	call init
 	movlw CMD_SKIP_ROM
 	movwf INDF
 	call send_cmd
-	decf FSR, F
+	POP
 send_cmd:
 	; send octet in INDF
 	call send_nibble
