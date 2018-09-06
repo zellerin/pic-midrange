@@ -4,7 +4,7 @@
 	radix DEC
 	include "stack.h"
 
-	global print_octet
+	global print_octet	; Print byte in INDF using eeprom_put_fn. Can change INDF.
 	extern eeprom_put_fn
 
 	code

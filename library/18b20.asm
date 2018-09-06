@@ -4,7 +4,8 @@
         include "config.h"
 	include "stack.h"
 
-	global read_temperature
+	global read_temperature	; measure temperature and return it in stack, MSB on top.
+
 	extern short_wait, do_error
 
 ;;; Expect single Dallas 18B20 with external power supply on PIN.
@@ -18,7 +19,6 @@ CMD_SKIP_ROM		equ 0xcc
 
 	code
 read_temperature:
-	;; measure temperature and return it in stack, MSB on top.
 	movlw CMD_CONVERT_T
 	call do_command
 	call wait_for_done	; takes almost a second; maybe we can sleep a bit?

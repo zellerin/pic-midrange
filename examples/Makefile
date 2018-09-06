@@ -47,4 +47,4 @@ read:
 
 obj/stack.a: obj/stack/init.o obj/stack/push.o obj/stack/pop.o
 obj/18b20.a: obj/18b20.o obj/print-temp.o
-obj/print.a: obj/print/eeprom.o obj/print/put-reg.o
+obj/print.a: obj/print/eeprom.o obj/print/put-reg.o obj/eeprom-read.o

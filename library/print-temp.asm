@@ -3,10 +3,10 @@
 	radix DEC
 	include "config.h"
 	include "stack.h"
+	include "print.h"
 
-	extern print_octet, eeprom_print
 	extern read_temperature
-	global print_temperature
+	global print_temperature ; Read temperature and print it out using eeprom_put_fn.
 	
 	code
 print_temperature:

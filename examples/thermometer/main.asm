@@ -7,14 +7,11 @@
 	include "config.h"
 	title "lcd module test"
 	include "stack.h"
+	include "print.h"
+	include "18b20.h"
 
 	__config 0x1ff &(_INTRC_OSC_NOCLKOUT & _WDT_ON & _MCLRE_OFF)
-
-	extern eeprom_print
 	extern mswait
-
-	extern stack_init
-
 
 	code
 	org 0
@@ -42,10 +39,8 @@ init:
 	bcf STATUS, RP0 ;; bank 0
 
 	movlw LOW(hello_text)
-	call eeprom_print
 
 main_loop:
-	extern print_temperature
 	call print_temperature
 	sleep
 	goto main_loop
