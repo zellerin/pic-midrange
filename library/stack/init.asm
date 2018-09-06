@@ -1,9 +1,11 @@
 ;; -*- mode:pic-asm; coding: utf-8 -*-
-	title "Stack allocation and init"
-	radix DEC
+
 	include "config.h"
+	radix DEC
+	title "Stack allocation and init"
 	
-	global stack_init, stack_base
+	global stack_init 	; Initialize stack. Has to be called with STACK_SIZE set.
+	global stack_base	; ** Where stack starts. Set by stack_init.
 
 	
 	udata_shr

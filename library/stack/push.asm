@@ -1,11 +1,11 @@
+;; -*- mode:pic-asm; coding: utf-8 -*-
+
 	include "config.h"
 	radix DEC
-	title "Stack ops"
+	title "Pushing and allocating stack"
 
-;;; Implement stack on midrange pics.
-;;; Top of stack is in INDF (address in FSR).
-;;; Initially, stack size is 20 octets.
-	global stack_push, stack_alloc
+	global stack_push	; Put W to INDF and advance FSR.
+	global stack_alloc	; Advance FSR.
 	extern do_error, stack_base, stack_init
 
 	code
