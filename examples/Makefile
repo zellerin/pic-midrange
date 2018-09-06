@@ -11,10 +11,10 @@ sim: sim.cod mem.hex
 clean:
 	rm -rf *.o *.lst *.co[df] *.map main.hex
 
-sim.hex sim.cod: main.o lib.a  $(OBJS) ../calibrate.o
-	gplink -o $@ $^ -g -c -m
+sim.hex sim.cod: main.o lib.a  $(addprefix obj/, $(OBJS)) ../calibrate.o
+	gplink -o $@ $^ -c -m
 
-%.hex: %.o lib.a $(OBJS)
+%.hex: %.o lib.a $(addprefix obj/, $(OBJS))
 	gplink -o $(GPCFLAGS) $@ $^ -c -m
 
 mem.hex: sim.hex
@@ -46,3 +46,4 @@ read:
 	gplib -c $@ $^
 
 obj/stack.a: obj/stack/init.o obj/stack/push.o obj/stack/pop.o
+obj/18b20.a: obj/18b20.o obj/print-temp.o
