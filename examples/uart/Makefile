@@ -1,6 +1,6 @@
-PICLIBS=115k.o eeprom.o uart/put-fn.o error.o put-reg.o
+PICLIBS=115k.o uart/put-fn.o error.o
 
-OBJS=obj/stack.a
+OBJS=stack.a print.a
 
 PICNAME=PIC12F675
 

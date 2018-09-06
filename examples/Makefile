@@ -21,7 +21,7 @@ mem.hex: sim.hex
 	$(SBCL) --script ../eeprom.lisp
 
 obj/%.o: $(LIBDIR)/%.asm config.h
-	install -d obj/stack obj/uart
+	install -d obj/stack obj/uart obj/print
 	gpasm -c $< -o $@  -I $(LIBDIR)
 
 lib.a:  $(addprefix obj/, $(PICLIBS))
@@ -47,3 +47,4 @@ read:
 
 obj/stack.a: obj/stack/init.o obj/stack/push.o obj/stack/pop.o
 obj/18b20.a: obj/18b20.o obj/print-temp.o
+obj/print.a: obj/print/eeprom.o obj/print/put-reg.o
