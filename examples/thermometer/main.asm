@@ -8,7 +8,7 @@
 	title "lcd module test"
 	include "stack.h"
 
-	__config 0x1ff &(_INTRC_OSC_NOCLKOUT & _WDT_OFF & _MCLRE_OFF)
+	__config 0x1ff &(_INTRC_OSC_NOCLKOUT & _WDT_ON & _MCLRE_OFF)
 
 	extern eeprom_print
 	extern mswait
@@ -34,6 +34,7 @@ init:
 	movwf OSCCAL
 	clrf ANSEL
 	bcf OPTION_REG ^ 0x80, NOT_GPPU ; enable pull ups in general
+	; incidentally, it also sets prescaler to WDT and 1:128
 	movlw 1<<THERMO_PIN
 	movwf WPU ^ 0x80
 	bcf TRISIO ^ 0x80, UART_PIN ; other are in, thermo week pulled up
@@ -46,14 +47,8 @@ init:
 main_loop:
 	extern print_temperature
 	call print_temperature
-	call long_wait
+	sleep
 	goto main_loop
-
-long_wait:
-	call $+1
-	call $+1
-	movlw 0x0
-	goto mswait
 
 DEEPROM code
 hello_text:
