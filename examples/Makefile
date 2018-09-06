@@ -12,7 +12,7 @@ clean:
 	rm -rf *.o *.lst *.co[df] *.map main.hex
 
 sim.hex sim.cod: main.o lib.a  $(OBJS) ../calibrate.o
-	gplink -o $@ $^ -c -m
+	gplink -o $@ $^ -g -c -m
 
 %.hex: %.o lib.a $(OBJS)
 	gplink -o $(GPCFLAGS) $@ $^ -c -m
@@ -42,3 +42,7 @@ program:
 read:
 	$(PK2CMD) /P$(PICNAME) /GF read-back.hex
 
+%.a:
+	gplib -c $@ $^
+
+obj/stack.a: obj/stack/init.o obj/stack/push.o obj/stack/pop.o
