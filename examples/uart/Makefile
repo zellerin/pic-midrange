@@ -1,4 +1,6 @@
-PICLIBS=115k.o eeprom.o	stack/init.o stack/push.o uart/put-fn.o error.o put-reg.o stack/pop.o
+PICLIBS=115k.o eeprom.o uart/put-fn.o error.o put-reg.o
+
+OBJS=obj/stack.a
 
 PICNAME=PIC12F675
 

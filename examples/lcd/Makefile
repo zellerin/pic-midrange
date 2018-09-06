@@ -1,5 +1,5 @@
-PICLIBS=18b20.o stack/init.o stack/push.o stack/pop.o wait.o eeprom.o put-reg.o lcd.o lcd-init.o
-PICLIBS+=print-temp.o
+PICLIBS=18b20.o wait.o eeprom.o put-reg.o lcd.o lcd-init.o
+PICLIBS+=print-temp.o error.o
 PICNAME=PIC16F630
-OBJS=error.o
+OBJS=obj/stack.a
 include ../Makefile
