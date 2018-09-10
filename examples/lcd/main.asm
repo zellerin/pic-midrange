@@ -19,35 +19,11 @@
 
 	extern read_temperature
 
-	udata_shr
-intr_w:	res 1
-intr_status:
-	res 1
-intr_fsr:
-	res 1
-temp_byte:
-	res 1
-
 	code
 	org 0
-	goto init
-;;; interrupt code
-	org 4
-	movwf intr_w
-	movf STATUS, w
-	movwf intr_status
 
-	movf intr_status, w
-	movwf STATUS
-	swapf intr_w, f
-	swapf intr_w, w
-	retfie
-;;; complete start
-init:
 	movlw 7
 	movwf CMCON
-;	clrf TMR1H
-;	clrf TMR1L
 	clrf PORTA
 	clrf PORTC
 ;;; Pull-up is sufficient for the 1wire communication:
