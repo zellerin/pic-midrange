@@ -4,7 +4,7 @@
 
 ;; Author: Tomas Zellerin <tomas@zellerin.cz>
 ;; Keywords: languages, local
-;; Version: 0.1
+;; Version: 0.2
 ;; Package-requires: ((emacs "24"))
 ;; Url: https://github.com/zellerin/pic-midrange/
 
@@ -38,8 +38,12 @@
    '("movwf" "movlw"
      "clrf" "goto"
      "call"
-     "addlw" "andlw" "iorlw"
-     "equ" "res")
+     "addlw" "andlw" "iorlw")
+   'words))
+
+(defvar pic-asm-directives
+  (regexp-opt
+   '("equ" "res" "org")
    'words))
 
 (defvar pic-asm-instruction-words-wf
@@ -52,7 +56,7 @@
 
 (defvar pic-asm-instruction-noop-words
   (regexp-opt
-   '( "retfie" "sleep" "return" "retfie" "wdtrst")
+   '( "retfie" "sleep" "return" "retfie" "clrwdt")
    'words))
 
 (defvar pic-asm-vanilla-builtins
@@ -79,10 +83,17 @@
    'words))
 
 (defvar pic-asm-constants
-  (concat "\\<0x[0-9a-fA-F]+\\>\\|\\<[0-9]+\\>\\|"
-	  (regexp-opt
-	   '("_INTRC_OSC_NOCLKOUT"
-	     "_WDT_ON"))))
+  (concat "\\<0x[0-9a-fA-F]+\\>\\|\\<[0-9]+\\>\\"))
+
+; See [[file:/usr/share/gputils/header/p12f675.inc::%20CONFIG%20Options][CONFIG]]
+(defvar pic-asm-config-words
+  (regexp-opt
+   '("_INTRC_OSC_NOCLKOUT" "_INTRC_OSC_CLKOUT"
+     "_EXTRC_OSC_NOCLKOUT" "_EXTRC_OSC_CLKOUT"
+     "_LP_OSC" "_XT_OSC" "_HS_OSC" "_EC_OSC"
+     "_WDT_ON" "_WDT_OFF"
+     "_MCLRE_ON" "_MCLRE_OFF"
+     "_CP_ON" "_CP_OFF" "_CPD_ON" "_CPD_OFF")))
 
 (defcustom pic-asm-processor "16f630"
   "Default processor for auto insert skeleton."
@@ -125,6 +136,13 @@
 	    ("\\<[[:alpha:]_][[:alnum:]_]+\\>" nil nil (0 font-lock-variable-name-face))
 	    (,pic-asm-constants nil nil
 			 (0 font-lock-constant-face)))
+	   (,pic-asm-directives (0 font-lock-builtin-face)
+	    (,pic-asm-var-words nil nil
+			 (0 font-lock-constant-face))
+	    (",.*" nil nil (0 font-lock-warning-face))
+	    ("\\<[[:alpha:]_][[:alnum:]_]+\\>" nil nil (0 font-lock-variable-name-face))
+	    (,pic-asm-constants nil nil
+			 (0 font-lock-constant-face)))
 	   ("radix" (0 font-lock-builtin-face)
 	    (,(regexp-opt '("DEC" "HEX") 'words)
 	     nil nil (0 font-lock-constant-face)))
@@ -134,6 +152,9 @@
 	    (0 font-lock-builtin-face)
 	    ("\\<[_[:alnum:]]+" nil nil
 	     (0 font-lock-variable-name-face)))
+	   ("__config" (0 font-lock-builtin-face)
+	    (,(concat "[(& ]\\(" pic-asm-config-words "\\)\\>") nil nil (1 font-lock-constant-face))
+	    ("[_[:alnum:]]+" nil nil (0 font-lock-warning-face) ))
 	   ;; with direction
 	   (,pic-asm-instruction-words-wf
 	    (0 font-lock-function-name-face)
