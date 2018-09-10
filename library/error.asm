@@ -1,19 +1,18 @@
 ;; -*- mode:pic-asm; coding: utf-8 -*-
+
 	include "config.h"
+	include "stack.h"
 	title "Error handling"
 	radix DEC
-
-	udata_shr
-errcode	res 1
 
 	global do_error
 	extern eeprom_print
 	code
 do_error:
-	movwf errcode
+	call stack_push
 	movlw LOW(error_text)
 	call eeprom_print
-	movf errcode, W
+	call stack_pop
 	call eeprom_print
 	clrf INTCON
 	sleep
