@@ -17,8 +17,6 @@
 
 	extern stack_init
 
-	extern read_temperature
-
 	code
 	org 0
 
