@@ -40,6 +40,7 @@ init:
 
 	movlw LOW(hello_text)
 
+	global main_loop	; for gpsim break
 main_loop:
 	call print_temperature
 	sleep
