@@ -193,7 +193,14 @@
 				  (lambda () (buffer-substring (match-beginning 1)
 							       (match-end 1)))))))
 
-(bind-key (kbd "C-c C-c") 'compile pic-asm-mode-map)
+(defun pic-asm-simulate ()
+  (interactive)
+  (switch-to-buffer
+   (make-comint "Simulate" "make" nil "sim"))
+  (gpsim-stc-mode))
+
+(bind-key "C-c C-c" 'compile pic-asm-mode-map)
+(bind-key "C-c C-s" 'pic-asm-simulate pic-asm-mode-map)
 
 
 (provide 'pic-asm)
