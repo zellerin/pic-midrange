@@ -101,15 +101,15 @@ old_b0:
   org 0xb5
 do_receive:
   clrf    0x72
-  goto    0x00b8
-  goto    0x00b8
+  nop
+  nop
   movlb   0x00
   movf    0x39, 0x0
   btfsc   0x03, 0x2
-  goto    0x00bd
-  goto    0x00be
   goto    0x00b8
-  goto    0x00bf
+  nop
+  nop
+  nop
   movf    0x7a, 0x0
   addlw   0x20
   movwf   0x06
@@ -132,12 +132,12 @@ do_receive:
   addwf   0x7a, 0x1
   movlw   0x08
   subwf   0x7a, 0x0
-  btfss   0x03, 0x0
-  goto    0x00d8
-  goto    0x00d9
-  goto    0x00db
+  btfsc   0x03, 0x0
   clrf    0x7a
-  goto    0x00db
+  nop
+  nop
+  nop
+  nop
   movlb   0x0e
   bcf     0x19, 0x5
   movlw   0x01
@@ -146,7 +146,7 @@ do_receive:
   movlb   0x0e
   bsf     0x19, 0x5
   movf    0x72, 0x0
-  goto    0x00e4
+  nop
   return
 main:
   nop
@@ -161,7 +161,7 @@ main:
   nop
   call    puts	; puts(0x81c3)
   nop
-  goto    0x00f2
+  nop
 main_loop
   nop
   call    do_receive
@@ -206,7 +206,7 @@ write_char_2
   movf    0x45, 0x0
   btfsc   0x03, 0x2	; while buffer remaining
   goto    write_char_2
-  goto    0x011d
+  nop
   nop
   movlb   0x0e
   btfsc   0x19, 0x4	; PIE3.TXIE
