@@ -83,21 +83,21 @@ init:
   movlw   0x02
   movwf   0x72
   movlp   0x02
-  call    0x021f
+  call    0x021f 		; set 3f & 40
   movlp   0x00
   movlw   0x2b 	; EUSART_SetOverrunErrorHandler(EUSART_DefaultOverrunErrorHandler);
   movwf   0x71
   movlw   0x02
   movwf   0x72
   movlp   0x02
-  call    0x0219
+  call    0x0219 		; set 0x3d & 3e
   movlp   0x00
   movlw   0x2f	;   EUSART_SetErrorHandler(EUSART_DefaultErrorHandler);
   movwf   0x71
   movlw   0x02
   movwf   0x72
   movlp   0x02
-  call    0x0225
+  call    0x0225 		; set 3b3c
   movlp   0x00
   movlb   0x00
   clrf    0x38	; txhead
@@ -129,12 +129,12 @@ isr_receive:
   nop
   nop
   bsf     0x01, 0x1 ; INDF1
-  movlb   0x00      ; goto *0x3f
-  movf    0x40, 0x0
-  movwf   0x0a
-  movf    0x3f, 0x0
-  callw
+  call frame_error_handle
   nop
+	nop
+	nop
+	nop
+	nop
   nop
   movlb   0x02
   btfss   0x1d, 0x1 ; RCSTA.OERR
@@ -146,12 +146,12 @@ isr_receive:
   nop
   nop
   bsf     0x01, 0x2 ; indf
-  movlb   0x00      ; goto *0x3d
-  movf    0x3e, 0x0
-  movwf   0x0a
-  movf    0x3d, 0x0
-  callw
   nop
+	nop
+	nop
+	nop
+	nop
+	nop
   nop
   nop
   nop
@@ -162,11 +162,11 @@ isr_receive:
   goto    0x00b0
   nop
   nop
-  movlb   0x00 ; goto *0x3b
-  movf    0x3c, 0x0
-  movwf   0x0a
-  movf    0x3b, 0x0
-  callw
+  call 0x0233
+  nop
+  nop
+  nop
+  nop
   nop
   nop
   movlp   0x01
@@ -523,12 +523,11 @@ puts:
   return
 ;;; system initialize?
   clrwdt
-;;; framing error handler
-feh:
+frame_error_handle:
   clrf    0x00
   addfsr  4, .1
   decfsz  0x09, 0x1
-  goto    feh
+  goto    frame_error_handle
   retlw   0x00
   movwf   0x73
   movf    0x73, 0x0
@@ -569,15 +568,16 @@ feh:
   movwf   0x3b
   return
 ;;; Overrun error handler
+overrun_handler:
   movlb   0x02
   bcf     0x1d, 0x4
   bsf     0x1d, 0x4
   return
 ;;; default error handler
+err_handler:
   movlp   0x01
   call    0x018f
   movlp   0x02
-  return
   return
 
   CONFIG RSTOSC=HFINT1, FEXTOSC=OFF, ZCD=ON, WDTE=OFF, LVP=OFF
