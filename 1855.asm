@@ -1,6 +1,8 @@
+             .org 0
 0000:  3180  movlp   0x00
 0001:  2829  goto    0x0029
-;;; interrupt
+           ;;; interrupt
+             .org 4
 0004:  147e  bsf     0x7e, 0x0
 0005:  3180  movlp   0x00
 0006:  1f0b  btfss   0x0b, 0x6	; INTCON.PEIE
@@ -38,14 +40,13 @@
 0026:  2827  nop
 0027:  107e  bcf     0x7e, 0x0
 0028:  0009  retfie
-;;; init
-0029:  3180  movlp   0x00
-002a:  282b  goto    0x002b
-;;; init2
+0029:  3180  nop
+002a:  282b  nop
+           ;;; init
 002b:  01fa  clrf    0x7a
 002c:  01fb  clrf    0x7b
 002d:  01fc  clrf    0x7c
-;;; FSR0 = 0x20
+           ;;; FSR0 = 0x20
 002e:  3020  movlw   0x20
 002f:  0084  movwf   0x04
 0030:  3000  movlw   0x00
@@ -53,14 +54,14 @@
 
 0032:  301b  movlw   0x1b
 0033:  3182  movlp   0x02
-;;; call system init
+           ;;; call system init
 0034:  2201  call    0x0201
 0035:  3180  movlp   0x00
 0036:  107e  bcf     0x7e, 0x0
 0037:  0020  movlb   0x00
 0038:  3180  movlp   0x00
 0039:  28e5  goto    main
-;;; eusart-init
+           ;;; eusart-init
 003a:  002e  movlb   0x0e
 003b:  1299  bcf     0x19, 0x5	; pie3 - rcie
 003c:  3079  movlw   0x79	;  EUSART_SetRxInterruptHandler(EUSART_Receive_ISR);
@@ -79,7 +80,7 @@
 0049:  3182  movlp   0x02
 004a:  220d  call    0x020d
 004b:  3180  movlp   0x00
-;;; USART
+           ;;; USART
 004c:  3008  movlw   0x08
 004d:  0022  movlb   0x02
 004e:  009f  movwf   0x1f 	; baud1con
@@ -186,7 +187,7 @@
 00b2:  3180  nop
 00b3:  28b4  nop
 00b4:  0008  return
-;;; receive
+           ;;; receive
 00b5:  01f2  clrf    0x72
 00b6:  28b8  goto    0x00b8
 00b7:  28b8  goto    0x00b8
@@ -331,7 +332,7 @@
 013f:  002e  movlb   0x0e
 0140:  1619  bsf     0x19, 0x4	; PIE3.TXIE
 0141:  0008  return
-;;; init ports - pin_manager_initialize
+           ;;; init ports - pin_manager_initialize
 0142:  0020  movlb   0x00
 0143:  0196  clrf    0x16 	; LATA
 0144:  0197  clrf    0x17	; LATB
@@ -373,7 +374,7 @@
 0168:  003d  movlb   0x1d	;
 0169:  00cb  movwf   0x4b	; RXPPS
 016a:  0008  return
-;;; Transmit ISR
+           ;;; Transmit ISR
 016b:  3008  movlw   0x08
 016c:  0020  movlb   0x00
 016d:  0245  subwf   0x45, 0x0
@@ -438,9 +439,9 @@
 01a7:  0020  movlb   0x00
 01a8:  07b9  addwf   0x39, 0x1
 01a9:  0008  return
-;;;; put string in 74/75 w/o newline
+           ;;;; put string in 74/75 w/o newline
 01aa:  29b8  goto    0x01b8
-;;;; put string from fsr0 
+           ;;;; put string from fsr0
 01ab:  0874  movf    0x74, 0x0
 01ac:  0084  movwf   0x04
 01ad:  0875  movf    0x75, 0x0
@@ -454,7 +455,7 @@
 01b5:  3000  movlw   0x00
 01b6:  3df5  addwfc  0x75, 0x1
 01b7:  29b8  goto    0x01b8
-;;;; put string in 74/75 w/o newline
+           ;;;; put string in 74/75 w/o newline
 01b8:  0874  movf    0x74, 0x0
 01b9:  0084  movwf   0x04 ; fsr0
 01ba:  0875  movf    0x75, 0x0
@@ -466,7 +467,7 @@
 01c0:  29ab  goto    0x01ab
 01c1:  29c2  goto    0x01c2
 01c2:  0008  return
-;;; Receive & display
+           ;;; Receive & display
 01c3:  3452  retlw   0x52
 01c4:  3465  retlw   0x65
 01c5:  3463  retlw   0x63
@@ -487,7 +488,7 @@
 01d4:  3461  retlw   0x61
 01d5:  3479  retlw   0x79
 01d6:  3400  retlw   0x00
-;;; system init
+           ;;; system init
 01d7:  3181  movlp   0x01
 01d8:  21f9  call    0x01f9 	; clean pmd
 01d9:  3181  movlp   0x01
@@ -501,7 +502,7 @@
 01e1:  203a  call    0x003a	; eusart-initialize
 01e2:  3181  movlp   0x01
 01e3:  0008  return
-;;; puts
+           ;;; puts
 01e4:  0878  movf    0x78, 0x0
 01e5:  00f5  movwf   0x75
 01e6:  0877  movf    0x77, 0x0
@@ -514,7 +515,7 @@
 01ed:  2207  call    0x0207
 01ee:  3181  movlp   0x01
 01ef:  0008  return
-;;;  oscilator-init
+           ;;;  oscilator-init
 01f0:  3062  movlw   0x62
 01f1:  0031  movlb   0x11
 01f2:  008d  movwf   0x0d 	; osccon1
@@ -524,7 +525,7 @@
 01f6:  0093  movwf   0x13	; oscfrq
 01f7:  0192  clrf    0x12	; osctune
 01f8:  0008  return
-;;; clear pmd
+           ;;; clear pmd
 01f9:  002f  movlb   0x0f
 01fa:  0196  clrf    0x16 	;pmd0 - pmd5
 01fb:  0197  clrf    0x17
@@ -533,9 +534,9 @@
 01fe:  019a  clrf    0x1a
 01ff:  019b  clrf    0x1b
 0200:  0008  return
-;;; system initialize?
+           ;;; system initialize?
 0201:  0064  clrwdt
-;;; framing error handler
+           ;;; framing error handler
 0202:  0180  clrf    0x00
 0203:  3101  addfsr  4, .1
 0204:  0b89  decfsz  0x09, 0x1
@@ -579,17 +580,18 @@
 0228:  0871  movf    0x71, 0x0
 0229:  00bb  movwf   0x3b
 022a:  0008  return
-;;; Overrun error handler
+           ;;; Overrun error handler
 022b:  0022  movlb   0x02
 022c:  121d  bcf     0x1d, 0x4
 022d:  161d  bsf     0x1d, 0x4
 022e:  0008  return
-;;; default error handler
+           ;;; default error handler
 022f:  3181  movlp   0x01
 0230:  218f  call    0x018f
 0231:  3182  movlp   0x02
 0232:  0008  return
 0233:  0008  return
+             .org 0x8000
 8007:  3fec  dw      0x3fec
 8008:  3bff  dw      0x3bff
 8009:  3f9f  dw      0x3f9f
