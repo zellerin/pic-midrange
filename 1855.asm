@@ -51,13 +51,6 @@ init:
 ;;; eusart-init
   movlb   0x0e
   bcf     0x19, 0x5	; pie3 - rcie
-  movlw   0x79	;  EUSART_SetRxInterruptHandler(EUSART_Receive_ISR);
-  movwf   0x71
-  movlw   0x00
-  movwf   0x72
-  movlp   0x02
-  call    0x0213
-  movlp   0x00
   movlb   0x0e
   bcf     0x19, 0x4	; pie3 - 0719
   movlw   0x6b	; EUSART_SetTxInterruptHandler(EUSART_Transmit_ISR);
@@ -78,26 +71,6 @@ init:
   movlw   0x19
   movwf   0x1b	; spbrgl
   clrf    0x1c	; spbrgh
-  movlw   0x33	; EUSART_SetFramingErrorHandler(EUSART_DefaultFramingErrorHandler);
-  movwf   0x71
-  movlw   0x02
-  movwf   0x72
-  movlp   0x02
-  call    0x021f 		; set 3f & 40
-  movlp   0x00
-  movlw   0x2b 	; EUSART_SetOverrunErrorHandler(EUSART_DefaultOverrunErrorHandler);
-  movwf   0x71
-  movlw   0x02
-  movwf   0x72
-  movlp   0x02
-  call    0x0219 		; set 0x3d & 3e
-  movlp   0x00
-  movlw   0x2f	;   EUSART_SetErrorHandler(EUSART_DefaultErrorHandler);
-  movwf   0x71
-  movlw   0x02
-  movwf   0x72
-  movlp   0x02
-  call    0x0225 		; set 3b3c
   movlp   0x00
   movlb   0x00
   clrf    0x38	; txhead
@@ -112,7 +85,8 @@ init:
   clrf    0x39	; rxcount
   movlb   0x0e
   bsf     0x19, 0x5	; PIE3.RCIE
-  return
+	return
+	org 0x79
 isr_receive:
   movf    0x7b, 0x0
   addlw   0x20
@@ -146,7 +120,7 @@ isr_receive:
   nop
   nop
   bsf     0x01, 0x2 ; indf
-  nop
+  call overrun_handler
 	nop
 	nop
 	nop
