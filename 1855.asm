@@ -230,11 +230,11 @@ main:
   bsf     0x0b, 0x7 	; intcon
   bsf     0x0b, 0x6	; intcon
   movlw   0xc3	; puts argument start
-  movwf   0x77
+  movwf   0x74
   movlw   0x81
-  movwf   0x78
+  movwf   0x75
   movlp   0x01
-  call    0x01e4	; puts
+  call    puts	; puts(0x81c3)
   movlp   0x00
   goto    0x00f2
 main_loop
@@ -489,11 +489,11 @@ hw_receive:
   call    0x003a	; eusart-initialize
   movlp   0x01
   return
-;;; puts
-  movf    0x78, 0x0
-  movwf   0x75
-  movf    0x77, 0x0
-  movwf   0x74
+puts:
+  nop
+  nop
+  nop
+  nop
   movlp   0x01
   call    0x01aa
   movlp   0x01
@@ -524,10 +524,11 @@ hw_receive:
 ;;; system initialize?
   clrwdt
 ;;; framing error handler
+feh:
   clrf    0x00
   addfsr  4, .1
   decfsz  0x09, 0x1
-  goto    0x0202
+  goto    feh
   retlw   0x00
   movwf   0x73
   movf    0x73, 0x0
