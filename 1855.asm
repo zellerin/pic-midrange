@@ -16,7 +16,6 @@ int_rc:
   btfss   0x0f, 0x5	; PIR3.RCIF
   goto    int_end
   call    isr_receive
-  nop
 int_end
   bcf     0x7e, 0x0
   retfie
@@ -32,12 +31,9 @@ init:
   movlw   0x00
   movwf   0x05
   movlw   0x1b
-  nop
   call    system_init_2
-  nop
   bcf     0x7e, 0x0
   movlb   0x00
-  nop
   goto    main
 eusart_init:
   movlb   0x0e
@@ -55,7 +51,6 @@ eusart_init:
   movlw   0x19
   movwf   0x1b	; spbrgl
   clrf    0x1c	; spbrgh
-  nop
   movlb   0x00
   clrf    0x38	; txhead
   clrf    0x7c	; txtail
@@ -101,16 +96,11 @@ old_b0:
   org 0xb5
 do_receive:
   clrf    0x72
-  nop
-	nop
 old_b8
   movlb   0x00
   movf    0x39, 0x0
   btfsc   0x03, 0x2
   goto    old_b8
-  nop
-  nop
-  nop
   movf    0x7a, 0x0
   addlw   0x20
   movwf   0x06
@@ -135,10 +125,6 @@ old_b8
   subwf   0x7a, 0x0
   btfsc   0x03, 0x0
   clrf    0x7a
-  nop
-  nop
-  nop
-  nop
   movlb   0x0e
   bcf     0x19, 0x5
   movlw   0x01
@@ -147,73 +133,50 @@ old_b8
   movlb   0x0e
   bsf     0x19, 0x5
   movf    0x72, 0x0
-  nop
   return
 main:
-  nop
   call    system_init
-  nop
   bsf     0x0b, 0x7 	; intcon
   bsf     0x0b, 0x6	; intcon
   movlw   low(receive_and_display)
-  movwf   0x74
+  movwf   0x04
   movlw   high(receive_and_display)
-  movwf   0x75
-  nop
+  movwf   0x05
   call    puts
-  nop
-  nop
 main_loop
-  nop
   call    do_receive
-  nop
   movwf   0x79
   movf    0x79, 0x0
   movlb   0x00
   movwf   0x46
   movf    0x46, 0x0
-  nop
   call    write_char
   movlw   0x0d
   call    write_char
   movlw   0x0a
   call    write_char
-  nop
   movlw   0x4f
-  nop
   call    write_char
-  nop
   movlw   0x6b
-  nop
   call    write_char
-  nop
   movlw   0x3e
-  nop
   call    write_char
-  nop
   movlb   0x00
   movf    0x46, 0x0
   movwf   0x16
   goto    main_loop
   goto    main_loop
-  nop
   goto    init
 write_char:
   movwf   0x72
-  nop
-  nop
 write_char_2
   movlb   0x00
   movf    0x45, 0x0
   btfsc   0x03, 0x2	; while buffer remaining
   goto    write_char_2
-  nop
-  nop
   movlb   0x0e
   btfsc   0x19, 0x4	; PIE3.TXIE
   goto    old_126
-  nop
-  nop
   movf    0x72, 0x0
   movlb   0x02
   movwf   0x1a
@@ -236,15 +199,10 @@ old_126:
   subwf   0x7c, 0x0
   btfsc   0x03, 0x0
 	clrf    0x7c
-  nop
-	nop
-	nop
 
-  nop
   movlw   0x01
   movlb   0x00
   subwf   0x45, 0x1
-  nop
 old_13f:
   movlb   0x0e
   bsf     0x19, 0x4	; PIE3.TXIE
@@ -297,8 +255,6 @@ transmit_isr:
   subwf   0x45, 0x0
   btfsc   0x03, 0x0
   goto    old_18b
-  nop
-  nop
   movf    0x3a, 0x0
   addlw   0x30
   movwf   0x06
@@ -315,10 +271,6 @@ transmit_isr:
   subwf   0x3a, 0x0
   btfsc   0x03, 0x0
   clrf    0x3a
-  nop
-  nop
-  nop
-  nop
   movlw   0x01
   movwf   0x70
   movf    0x70, 0x0
@@ -327,7 +279,6 @@ transmit_isr:
 old_18b:
   movlb   0x0e
   bcf     0x19, 0x4
-  nop
   return
 hw_receive:
   movlb   0x02
@@ -347,10 +298,6 @@ hw_receive:
   subwf   0x7b, 0x0
   btfsc   0x03, 0x0
   clrf    0x7b
-  nop
-  nop
-  nop
-  nop
   movlw   0x01
   movwf   0x70
   movf    0x70, 0x0
@@ -358,36 +305,16 @@ hw_receive:
   addwf   0x39, 0x1
   return
 ;;;; put string in 74/75 w/o newline
-  nop
 ;;;; put string from fsr0
 old_01ab:
-  movf    0x74, 0x0
-  movwf   0x04
-  movf    0x75, 0x0
-  movwf   0x05
-  movf    0x00, 0x0
-  nop
   call    write_char_3
-  nop
-  movlw   0x01
-  addwf   0x74, 0x1
-  movlw   0x00
-  addwfc  0x75, 0x1
-  nop
 put_string_b
-  movf    0x74, 0x0
-  movwf   0x04 ; fsr0
-  movf    0x75, 0x0
-  movwf   0x05
   moviw   0++
   btfss   0x03, 0x2
   goto    old_01ab
-  nop
-  nop
-  nop
   return
 receive_and_display:
-  retlw   0x52
+  retlw   0x30
   retlw   0x65
   retlw   0x63
   retlw   0x65
@@ -408,31 +335,15 @@ receive_and_display:
   retlw   0x79
   retlw   0x00
 system_init:
-  nop
   call    clean_pmd
-  nop
-  nop
   call    pin_init
-  nop
-  nop
   call    osc_init
-  nop
-  nop
   call    eusart_init
-  nop
   return
 puts:
-  nop
-  nop
-  nop
-  nop
-  nop
   call    put_string_b
-  nop
   movlw   0x0a
-  nop
   call    write_char_3
-  nop
   return
 
 osc_init:
@@ -465,9 +376,7 @@ frame_error_handle:
 write_char_3
   movwf   0x73
   movf    0x73, 0x0
-  nop
   call    write_char
-  nop
   return
 
   movf    0x72, 0x0
