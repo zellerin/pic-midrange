@@ -59,7 +59,7 @@
 0036:  107e  bcf     0x7e, 0x0
 0037:  0020  movlb   0x00
 0038:  3180  movlp   0x00
-0039:  28e5  goto    0x00e5
+0039:  28e5  goto    main
 ;;; eusart-init
 003a:  002e  movlb   0x0e
 003b:  1299  bcf     0x19, 0x5	; pie3 - rcie
@@ -234,7 +234,7 @@
 00e2:  0872  movf    0x72, 0x0
 00e3:  28e4  goto    0x00e4
 00e4:  0008  return
-;;; main preamble
+           main:
 00e5:  3181  movlp   0x01
 00e6:  21d7  call    0x01d7 	; system init
 00e7:  3180  movlp   0x00
@@ -248,7 +248,7 @@
 00ef:  21e4  call    0x01e4	; puts
 00f0:  3180  movlp   0x00
 00f1:  28f2  goto    0x00f2
-;;; main loop
+           main_loop
 00f2:  3180  movlp   0x00
 00f3:  20b5  call    0x00b5
 00f4:  3180  movlp   0x00
@@ -258,32 +258,32 @@
 00f8:  00c6  movwf   0x46
 00f9:  0846  movf    0x46, 0x0
 00fa:  3181  movlp   0x01
-00fb:  2114  call    0x0114
+00fb:  2114  call    write_char
 00fc:  3180  movlp   0x00
 00fd:  300a  movlw   0x0a
 00fe:  3181  movlp   0x01
-00ff:  2114  call    0x0114
+00ff:  2114  call    write_char
 0100:  3180  movlp   0x00
 0101:  304f  movlw   0x4f
 0102:  3181  movlp   0x01
-0103:  2114  call    0x0114
+0103:  2114  call    write_char
 0104:  3180  movlp   0x00
 0105:  306b  movlw   0x6b
 0106:  3181  movlp   0x01
-0107:  2114  call    0x0114
+0107:  2114  call    write_char
 0108:  3180  movlp   0x00
 0109:  303e  movlw   0x3e
 010a:  3181  movlp   0x01
-010b:  2114  call    0x0114
+010b:  2114  call    write_char
 010c:  3180  movlp   0x00
 010d:  0020  movlb   0x00
 010e:  0846  movf    0x46, 0x0
 010f:  0096  movwf   0x16
-0110:  28f2  goto    0x00f2
-0111:  28f2  goto    0x00f2
+0110:  28f2  goto    main_loop
+0111:  28f2  goto    main_loop
 0112:  3180  movlp   0x00
 0113:  2829  goto    0x0029
-;;; write char
+           write_char:
 0114:  00f2  movwf   0x72
 0115:  2917  goto    0x0117
 0116:  2917  goto    0x0117
@@ -436,7 +436,9 @@
 01a7:  0020  movlb   0x00
 01a8:  07b9  addwf   0x39, 0x1
 01a9:  0008  return
+;;;; put string in 74/75 w/o newline
 01aa:  29b8  goto    0x01b8
+;;;; put string from fsr0 
 01ab:  0874  movf    0x74, 0x0
 01ac:  0084  movwf   0x04
 01ad:  0875  movf    0x75, 0x0
@@ -450,8 +452,9 @@
 01b5:  3000  movlw   0x00
 01b6:  3df5  addwfc  0x75, 0x1
 01b7:  29b8  goto    0x01b8
+;;;; put string in 74/75 w/o newline
 01b8:  0874  movf    0x74, 0x0
-01b9:  0084  movwf   0x04
+01b9:  0084  movwf   0x04 ; fsr0
 01ba:  0875  movf    0x75, 0x0
 01bb:  0085  movwf   0x05
 01bc:  0012  moviw   0++
@@ -539,7 +542,7 @@
 0207:  00f3  movwf   0x73
 0208:  0873  movf    0x73, 0x0
 0209:  3181  movlp   0x01
-020a:  2114  call    0x0114
+020a:  2114  call    write_char
 020b:  3182  movlp   0x02
 020c:  0008  return
 
