@@ -4,38 +4,38 @@
 0004:  147e  bsf     0x7e, 0x0
 0005:  3180  movlp   0x00
 0006:  1f0b  btfss   0x0b, 0x6	; INTCON.PEIE
-0007:  2809  goto    0x0009
-0008:  280a  goto    0x000a
-0009:  2827  goto    0x0027
+0007:  2809  goto    0x0027
+0008:  280a  nop
+0009:  2827  nop
 000a:  002e  movlb   0x0e
 000b:  1e19  btfss   0x19, 0x4	; PIE3.TXIE
-000c:  280e  goto    0x000e
-000d:  280f  goto    0x000f
-000e:  2817  goto    0x0017
+000c:  280e  goto    0x0017
+000d:  280f  nop
+000e:  2817  nop
 000f:  1e0f  btfss   0x0f, 0x4	; PIR3.TXIF
-0010:  2812  goto    0x0012
-0011:  2813  goto    0x0013
-0012:  2817  goto    0x0017
+0010:  2812  goto    0x0017
+0011:  2813  nop
+0012:  2817  nop
 0013:  3181  movlp   0x01
 0014:  216b  call    0x016b	; transmit ISR
 0015:  3180  movlp   0x00
 0016:  2827  goto    0x0027
 0017:  1e99  btfss   0x19, 0x5	; PIE3.RCIE
-0018:  281a  goto    0x001a
-0019:  281b  goto    0x001b
-001a:  2827  goto    0x0027
+0018:  281a  goto    0x0027
+0019:  281b  nop
+001a:  2827  nop
 001b:  1e8f  btfss   0x0f, 0x5	; PIR3.RCIF
-001c:  281e  goto    0x001e
-001d:  281f  goto    0x001f
-001e:  2827  goto    0x0027
+001c:  281e  goto    0x0027
+001d:  281f  nop
+001e:  2827  nop
 001f:  3180  movlp   0x00
-0020:  2079  call    0x0079	; receive ISR
+0020:  2079  call    isr_receive
 0021:  3180  movlp   0x00
-0022:  2827  goto    0x0027
-0023:  2827  goto    0x0027
-0024:  2827  goto    0x0027
-0025:  2827  goto    0x0027
-0026:  2827  goto    0x0027
+0022:  2827  nop
+0023:  2827  nop
+0024:  2827  nop
+0025:  2827  nop
+0026:  2827  nop
 0027:  107e  bcf     0x7e, 0x0
 0028:  0009  retfie
 ;;; init
@@ -125,65 +125,66 @@
 0076:  002e  movlb   0x0e
 0077:  1699  bsf     0x19, 0x5	; PIE3.RCIE
 0078:  0008  return
+           isr_receive:
 0079:  087b  movf    0x7b, 0x0
 007a:  3e20  addlw   0x20
 007b:  0086  movwf   0x06
-007c:  0187  clrf    0x07
-007d:  0181  clrf    0x01
+007c:  0187  clrf    0x07  ; FSR1 = 0x2*0x7b
+007d:  0181  clrf    0x01  ; INDF1
 007e:  0022  movlb   0x02
-007f:  1d1d  btfss   0x1d, 0x2
-0080:  2882  goto    0x0082
-0081:  2883  goto    0x0083
-0082:  288f  goto    0x008f
-0083:  087b  movf    0x7b, 0x0
-0084:  3e20  addlw   0x20
-0085:  0086  movwf   0x06
-0086:  0187  clrf    0x07
-0087:  1481  bsf     0x01, 0x1
-0088:  0020  movlb   0x00
+007f:  1d1d  btfss   0x1d, 0x2 ; RCSTA.FERR
+0080:  2882  goto    0x008f
+0081:  2883  nop
+0082:  288f  nop
+0083:  087b  nop
+0084:  3e20  nop
+0085:  0086  nop
+0086:  0187  nop
+0087:  1481  bsf     0x01, 0x1 ; INDF1
+0088:  0020  movlb   0x00      ; goto *0x3f
 0089:  0840  movf    0x40, 0x0
 008a:  008a  movwf   0x0a
 008b:  083f  movf    0x3f, 0x0
 008c:  000a  callw
-008d:  3180  movlp   0x00
-008e:  288f  goto    0x008f
+008d:  3180  nop
+008e:  288f  nop
 008f:  0022  movlb   0x02
-0090:  1c9d  btfss   0x1d, 0x1
-0091:  2893  goto    0x0093
-0092:  2894  goto    0x0094
-0093:  28a0  goto    0x00a0
-0094:  087b  movf    0x7b, 0x0
-0095:  3e20  addlw   0x20
-0096:  0086  movwf   0x06
-0097:  0187  clrf    0x07
-0098:  1501  bsf     0x01, 0x2
-0099:  0020  movlb   0x00
+0090:  1c9d  btfss   0x1d, 0x1 ; RCSTA.OERR
+0091:  2893  goto    0x00a0
+0092:  2894  nop
+0093:  28a0  nop
+0094:  087b  nop
+0095:  3e20  nop
+0096:  0086  nop
+0097:  0187  nop
+0098:  1501  bsf     0x01, 0x2 ; indf
+0099:  0020  movlb   0x00      ; goto *0x3d
 009a:  083e  movf    0x3e, 0x0
 009b:  008a  movwf   0x0a
 009c:  083d  movf    0x3d, 0x0
 009d:  000a  callw
-009e:  3180  movlp   0x00
-009f:  28a0  goto    0x00a0
-00a0:  087b  movf    0x7b, 0x0
-00a1:  3e20  addlw   0x20
-00a2:  0086  movwf   0x06
-00a3:  0187  clrf    0x07
+009e:  3180  nop
+009f:  28a0  nop
+00a0:  087b  nop
+00a1:  3e20  nop
+00a2:  0086  nop
+00a3:  0187  nop
 00a4:  0801  movf    0x01, 0x0
-00a5:  1903  btfsc   0x03, 0x2
-00a6:  28a8  goto    0x00a8
-00a7:  28a9  goto    0x00a9
-00a8:  28b0  goto    0x00b0
-00a9:  0020  movlb   0x00
+00a5:  1903  btfsc   0x03, 0x2   ; zero?
+00a6:  28a8  goto    0x00b0
+00a7:  28a9  nop
+00a8:  28b0  nop
+00a9:  0020  movlb   0x00 ; goto *0x3b
 00aa:  083c  movf    0x3c, 0x0
 00ab:  008a  movwf   0x0a
 00ac:  083b  movf    0x3b, 0x0
 00ad:  000a  callw
-00ae:  3180  movlp   0x00
-00af:  28b4  goto    0x00b4
+00ae:  3180  nop
+00af:  28b4  nop
 00b0:  3181  movlp   0x01
 00b1:  218f  call    0x018f
-00b2:  3180  movlp   0x00
-00b3:  28b4  goto    0x00b4
+00b2:  3180  nop
+00b3:  28b4  nop
 00b4:  0008  return
 ;;; receive
 00b5:  01f2  clrf    0x72
@@ -409,8 +410,9 @@
 018c:  1219  bcf     0x19, 0x4
 018d:  298e  goto    0x018e
 018e:  0008  return
+           hw_receive
 018f:  0022  movlb   0x02
-0190:  0819  movf    0x19, 0x0
+0190:  0819  movf    0x19, 0x0  ; RCREG
 0191:  00f0  movwf   0x70
 0192:  087b  movf    0x7b, 0x0
 0193:  3e28  addlw   0x28
@@ -425,11 +427,11 @@
 019c:  3008  movlw   0x08
 019d:  027b  subwf   0x7b, 0x0
 019e:  1c03  btfss   0x03, 0x0
-019f:  29a1  goto    0x01a1
-01a0:  29a2  goto    0x01a2
-01a1:  29a4  goto    0x01a4
+019f:  29a1  goto    0x01a4
+01a0:  29a2  nop
+01a1:  29a4  nop
 01a2:  01fb  clrf    0x7b
-01a3:  29a4  goto    0x01a4
+01a3:  29a4  nop
 01a4:  3001  movlw   0x01
 01a5:  00f0  movwf   0x70
 01a6:  0870  movf    0x70, 0x0
