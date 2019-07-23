@@ -87,6 +87,7 @@ init:
   bsf     0x19, 0x5	; PIE3.RCIE
 	return
 	org 0x79
+
 isr_receive:
   movf    0x7b, 0x0
   addlw   0x20
@@ -95,60 +96,25 @@ isr_receive:
   clrf    0x01  ; INDF1
   movlb   0x02
   btfss   0x1d, 0x2 ; RCSTA.FERR
-  goto    0x008f
-  nop
-  nop
-  nop
-  nop
-  nop
-  nop
+  goto    old_08f
   bsf     0x01, 0x1 ; INDF1
   call frame_error_handle
-  nop
-	nop
-	nop
-	nop
-	nop
-  nop
+old_08f:
   movlb   0x02
   btfss   0x1d, 0x1 ; RCSTA.OERR
-  goto    0x00a0
-  nop
-  nop
-  nop
-  nop
-  nop
-  nop
+  goto    old_a0
   bsf     0x01, 0x2 ; indf
   call overrun_handler
-	nop
-	nop
-	nop
-	nop
-	nop
-  nop
-  nop
-  nop
-  nop
-  nop
-  movf    0x01, 0x0
+old_a0:
+	movf    0x01, 0x0
   btfsc   0x03, 0x2   ; zero?
-  goto    0x00b0
-  nop
-  nop
+  goto    old_b0
   call 0x022f
-  nop
-  nop
-  nop
-  nop
-  nop
-  nop
-  movlp   0x01
+old_b0:
   call    0x018f
-  nop
-  nop
   return
 ;;; receive
+  org 0xb5
   clrf    0x72
   goto    0x00b8
   goto    0x00b8
@@ -199,7 +165,7 @@ isr_receive:
   return
 main:
   movlp   0x01
-  call    0x01d7 	; system init
+  call    system_init
   movlp   0x00
   bsf     0x0b, 0x7 	; intcon
   bsf     0x0b, 0x6	; intcon
@@ -449,7 +415,7 @@ hw_receive:
   retlw   0x61
   retlw   0x79
   retlw   0x00
-;;; system init
+system_init:
   movlp   0x01
   call    0x01f9 	; clean pmd
   movlp   0x01
