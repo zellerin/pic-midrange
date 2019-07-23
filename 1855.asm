@@ -1,48 +1,35 @@
   org 0
   movlp   0x00
-  goto    0x0029
+  goto    init
 ;;; interrupt
   org 4
   bsf     0x7e, 0x0
   movlp   0x00
   btfss   0x0b, 0x6	; INTCON.PEIE
-  goto    0x0027
-  nop
-  nop
+  goto    int_end
   movlb   0x0e
   btfss   0x19, 0x4	; PIE3.TXIE
-  goto    0x0017
-  nop
-  nop
+  goto    int_rc
   btfss   0x0f, 0x4	; PIR3.TXIF
-  goto    0x0017
-  nop
-  nop
+  goto    int_rc
   movlp   0x01
   call    0x016b	; transmit ISR
   movlp   0x00
-  goto    0x0027
+  goto    int_end
+int_rc:
   btfss   0x19, 0x5	; PIE3.RCIE
-  goto    0x0027
-  nop
-  nop
+  goto    int_end
   btfss   0x0f, 0x5	; PIR3.RCIF
-  goto    0x0027
-  nop
-  nop
+  goto    int_end
   movlp   0x00
   call    isr_receive
   movlp   0x00
-  nop
-  nop
-  nop
-  nop
-  nop
+int_end
   bcf     0x7e, 0x0
   retfie
-  nop
-  nop
-;;; init
+
+  org 0x2b
+init:
   clrf    0x7a
   clrf    0x7b
   clrf    0x7c
@@ -261,9 +248,9 @@ main_loop
   movf    0x46, 0x0
   movlp   0x01
   call    write_char
-  movlp   0x00
   movlw   0x0d
-  movlp   0x01
+  call    write_char
+  movlw   0x0a
   call    write_char
   movlp   0x00
   movlw   0x4f
@@ -284,7 +271,7 @@ main_loop
   goto    main_loop
   goto    main_loop
   movlp   0x00
-  goto    0x0029
+  goto    init
 write_char:
   movwf   0x72
   goto    0x0117
