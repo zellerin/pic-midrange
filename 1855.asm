@@ -162,7 +162,7 @@ isr_receive:
   goto    0x00b0
   nop
   nop
-  call 0x0233
+  call 0x022f
   nop
   nop
   nop
