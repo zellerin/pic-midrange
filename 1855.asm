@@ -102,11 +102,12 @@ old_b0:
 do_receive:
   clrf    0x72
   nop
-  nop
+	nop
+old_b8
   movlb   0x00
   movf    0x39, 0x0
   btfsc   0x03, 0x2
-  goto    0x00b8
+  goto    old_b8
   nop
   nop
   nop
@@ -295,7 +296,7 @@ transmit_isr:
   movlb   0x00
   subwf   0x45, 0x0
   btfsc   0x03, 0x0
-  goto    0x018b
+  goto    old_18b
   nop
   nop
   movf    0x3a, 0x0
@@ -312,20 +313,21 @@ transmit_isr:
   addwf   0x3a, 0x1
   movlw   0x08
   subwf   0x3a, 0x0
-  btfss   0x03, 0x0
-  goto    0x0186
-  nop
-  nop
+  btfsc   0x03, 0x0
   clrf    0x3a
-  goto    0x0186
+  nop
+  nop
+  nop
+  nop
   movlw   0x01
   movwf   0x70
   movf    0x70, 0x0
   addwf   0x45, 0x1
-  goto    0x018e
+  return
+old_18b:
   movlb   0x0e
   bcf     0x19, 0x4
-  goto    0x018e
+  nop
   return
 hw_receive:
   movlb   0x02
