@@ -1,29 +1,22 @@
   org 0
-  movlp   0x00
   goto    init
 ;;; interrupt
   org 4
   bsf     0x7e, 0x0
-  movlp   0x00
   btfss   0x0b, 0x6	; INTCON.PEIE
   goto    int_end
   movlb   0x0e
-  btfss   0x19, 0x4	; PIE3.TXIE
-  goto    int_rc
+  btfsc   0x19, 0x4	; PIE3.TXIE
   btfss   0x0f, 0x4	; PIR3.TXIF
   goto    int_rc
-  movlp   0x01
-  call    0x016b	; transmit ISR
-  movlp   0x00
+  call    transmit_isr
   goto    int_end
 int_rc:
-  btfss   0x19, 0x5	; PIE3.RCIE
-  goto    int_end
+  btfsc   0x19, 0x5	; PIE3.RCIE
   btfss   0x0f, 0x5	; PIR3.RCIF
   goto    int_end
-  movlp   0x00
   call    isr_receive
-  movlp   0x00
+  nop
 int_end
   bcf     0x7e, 0x0
   retfie
@@ -38,28 +31,19 @@ init:
   movwf   0x04
   movlw   0x00
   movwf   0x05
-
   movlw   0x1b
-  movlp   0x02
-;;; call system init
-  call    0x0201
-  movlp   0x00
+  nop
+  call    system_init_2
+  nop
   bcf     0x7e, 0x0
   movlb   0x00
-  movlp   0x00
+  nop
   goto    main
-;;; eusart-init
+eusart_init:
   movlb   0x0e
   bcf     0x19, 0x5	; pie3 - rcie
   movlb   0x0e
   bcf     0x19, 0x4	; pie3 - 0719
-  movlw   0x6b	; EUSART_SetTxInterruptHandler(EUSART_Transmit_ISR);
-  movwf   0x71
-  movlw   0x01
-  movwf   0x72
-  movlp   0x02
-  call    0x020d
-  movlp   0x00
 ;;; USART
   movlw   0x08
   movlb   0x02
@@ -71,7 +55,7 @@ init:
   movlw   0x19
   movwf   0x1b	; spbrgl
   clrf    0x1c	; spbrgh
-  movlp   0x00
+  nop
   movlb   0x00
   clrf    0x38	; txhead
   clrf    0x7c	; txtail
@@ -106,15 +90,16 @@ old_08f:
   bsf     0x01, 0x2 ; indf
   call overrun_handler
 old_a0:
-	movf    0x01, 0x0
+  movf    0x01, 0x0
   btfsc   0x03, 0x2   ; zero?
   goto    old_b0
-  call 0x022f
+  call    hw_receive
 old_b0:
-  call    0x018f
-  return
+  goto    hw_receive
+
 ;;; receive
   org 0xb5
+do_receive:
   clrf    0x72
   goto    0x00b8
   goto    0x00b8
@@ -164,64 +149,65 @@ old_b0:
   goto    0x00e4
   return
 main:
-  movlp   0x01
+  nop
   call    system_init
-  movlp   0x00
+  nop
   bsf     0x0b, 0x7 	; intcon
   bsf     0x0b, 0x6	; intcon
   movlw   0xc3	; puts argument start
   movwf   0x74
   movlw   0x81
   movwf   0x75
-  movlp   0x01
+  nop
   call    puts	; puts(0x81c3)
-  movlp   0x00
+  nop
   goto    0x00f2
 main_loop
-  movlp   0x00
-  call    0x00b5
-  movlp   0x00
+  nop
+  call    do_receive
+  nop
   movwf   0x79
   movf    0x79, 0x0
   movlb   0x00
   movwf   0x46
   movf    0x46, 0x0
-  movlp   0x01
+  nop
   call    write_char
   movlw   0x0d
   call    write_char
   movlw   0x0a
   call    write_char
-  movlp   0x00
+  nop
   movlw   0x4f
-  movlp   0x01
+  nop
   call    write_char
-  movlp   0x00
+  nop
   movlw   0x6b
-  movlp   0x01
+  nop
   call    write_char
-  movlp   0x00
+  nop
   movlw   0x3e
-  movlp   0x01
+  nop
   call    write_char
-  movlp   0x00
+  nop
   movlb   0x00
   movf    0x46, 0x0
   movwf   0x16
   goto    main_loop
   goto    main_loop
-  movlp   0x00
+  nop
   goto    init
 write_char:
   movwf   0x72
-  goto    0x0117
-  goto    0x0117
+  nop
+  nop
+write_char_2
   movlb   0x00
   movf    0x45, 0x0
   btfsc   0x03, 0x2	; while buffer remaining
-  goto    0x011c
+  goto    write_char_2
   goto    0x011d
-  goto    0x0117
+  nop
   movlb   0x0e
   btfsc   0x19, 0x4	; PIE3.TXIE
   goto    0x0121
@@ -259,7 +245,7 @@ write_char:
   movlb   0x0e
   bsf     0x19, 0x4	; PIE3.TXIE
   return
-;;; init ports - pin_manager_initialize
+pin_init:
   movlb   0x00
   clrf    0x16 	; LATA
   clrf    0x17	; LATB
@@ -301,14 +287,14 @@ write_char:
   movlb   0x1d	;
   movwf   0x4b	; RXPPS
   return
-;;; Transmit ISR
+transmit_isr:
   movlw   0x08
   movlb   0x00
   subwf   0x45, 0x0
   btfsc   0x03, 0x0
-  goto    0x0171
-  goto    0x0172
   goto    0x018b
+  nop
+  nop
   movf    0x3a, 0x0
   addlw   0x30
   movwf   0x06
@@ -324,9 +310,9 @@ write_char:
   movlw   0x08
   subwf   0x3a, 0x0
   btfss   0x03, 0x0
-  goto    0x0183
-  goto    0x0184
   goto    0x0186
+  nop
+  nop
   clrf    0x3a
   goto    0x0186
   movlw   0x01
@@ -374,15 +360,15 @@ hw_receive:
   movf    0x75, 0x0
   movwf   0x05
   movf    0x00, 0x0
-  movlp   0x02
-  call    0x0207
-  movlp   0x01
+  nop
+  call    write_char_3
+  nop
   movlw   0x01
   addwf   0x74, 0x1
   movlw   0x00
   addwfc  0x75, 0x1
   goto    0x01b8
-;;;; put string in 74/75 w/o newline
+put_string_b
   movf    0x74, 0x0
   movwf   0x04 ; fsr0
   movf    0x75, 0x0
@@ -416,33 +402,34 @@ hw_receive:
   retlw   0x79
   retlw   0x00
 system_init:
-  movlp   0x01
-  call    0x01f9 	; clean pmd
-  movlp   0x01
-  movlp   0x01
-  call    0x0142	; pin mgr init
-  movlp   0x01
-  movlp   0x01
-  call    0x01f0	; oscillator-initialize
-  movlp   0x01
-  movlp   0x00
-  call    0x003a	; eusart-initialize
-  movlp   0x01
+  nop
+  call    clean_pmd
+  nop
+  nop
+  call    pin_init
+  nop
+  nop
+  call    osc_init
+  nop
+  nop
+  call    eusart_init
+  nop
   return
 puts:
   nop
   nop
   nop
   nop
-  movlp   0x01
-  call    0x01aa
-  movlp   0x01
+  nop
+  call    put_string_b
+  nop
   movlw   0x0a
-  movlp   0x02
-  call    0x0207
-  movlp   0x01
+  nop
+  call    write_char_3
+  nop
   return
-;;;  oscilator-init
+
+osc_init:
   movlw   0x62
   movlb   0x11
   movwf   0x0d 	; osccon1
@@ -452,7 +439,7 @@ puts:
   movwf   0x13	; oscfrq
   clrf    0x12	; osctune
   return
-;;; clear pmd
+clean_pmd:
   movlb   0x0f
   clrf    0x16 	;pmd0 - pmd5
   clrf    0x17
@@ -461,7 +448,7 @@ puts:
   clrf    0x1a
   clrf    0x1b
   return
-;;; system initialize?
+system_init_2
   clrwdt
 frame_error_handle:
   clrf    0x00
@@ -469,11 +456,12 @@ frame_error_handle:
   decfsz  0x09, 0x1
   goto    frame_error_handle
   retlw   0x00
+write_char_3
   movwf   0x73
   movf    0x73, 0x0
-  movlp   0x01
+  nop
   call    write_char
-  movlp   0x02
+  nop
   return
 
   movf    0x72, 0x0
@@ -491,10 +479,7 @@ overrun_handler:
   return
 ;;; default error handler
 err_handler:
-  movlp   0x01
-  call    0x018f
-  movlp   0x02
-  return
+  goto    hw_receive
 
   CONFIG RSTOSC=HFINT1, FEXTOSC=OFF, ZCD=ON, WDTE=OFF, LVP=OFF
   end
