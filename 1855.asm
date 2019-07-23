@@ -20,9 +20,12 @@ int_end
   bcf     0x7e, 0x0
   retfie
 
-  org 0x2b
+rxtail equ 0x7a
+rxcount equ 0x39
+rxhead equ 0x7b
+
 init:
-  clrf    0x7a
+  clrf    rxtail
   clrf    0x7b
   clrf    0x7c
 ;;; FSR0 = 0x20
@@ -60,12 +63,11 @@ eusart_init:
   movf    0x73, 0x0
   movwf   0x45
   clrf    0x7b	; rxhead
-  clrf    0x7a	; rxtail
-  clrf    0x39	; rxcount
+  clrf    rxtail	; rxtail
+  clrf    rxcount	; rxcount
   movlb   0x0e
   bsf     0x19, 0x5	; PIE3.RCIE
 	return
-	org 0x79
 
 isr_receive:
   movf    0x7b, 0x0
@@ -93,23 +95,22 @@ old_b0:
   goto    hw_receive
 
 ;;; receive
-  org 0xb5
 do_receive:
   clrf    0x72
 old_b8
   movlb   0x00
-  movf    0x39, 0x0
-  btfsc   0x03, 0x2
+  movf    rxcount, 0x0		; count
+  btfsc   0x03, 0x2		; flag of being done
   goto    old_b8
-  movf    0x7a, 0x0
-  addlw   0x20
+  movf    rxtail, 0x0		; indf = rxtail + 20
+  addlw   0x20			;
   movwf   0x06
   clrf    0x07
-  movf    0x01, 0x0
+  movf    0x01, 0x0		; value
   movwf   0x71
   movf    0x71, 0x0
   movwf   0x38
-  movf    0x7a, 0x0
+  movf    rxtail, 0x0
   addlw   0x28
   movwf   0x06
   clrf    0x07
@@ -120,16 +121,16 @@ old_b8
   movlw   0x01
   movwf   0x71
   movf    0x71, 0x0
-  addwf   0x7a, 0x1
+  addwf   rxtail, 0x1
   movlw   0x08
-  subwf   0x7a, 0x0
+  subwf   rxtail, 0x0
   btfsc   0x03, 0x0
-  clrf    0x7a
+  clrf    rxtail
   movlb   0x0e
   bcf     0x19, 0x5
   movlw   0x01
   movlb   0x00
-  subwf   0x39, 0x1
+  subwf   rxcount, 0x1
   movlb   0x0e
   bsf     0x19, 0x5
   movf    0x72, 0x0
@@ -302,7 +303,7 @@ hw_receive:
   movwf   0x70
   movf    0x70, 0x0
   movlb   0x00
-  addwf   0x39, 0x1
+  addwf   rxcount, 0x1
   return
 ;;;; put string in 74/75 w/o newline
 ;;;; put string from fsr0
@@ -314,7 +315,7 @@ put_string_b
   goto    old_01ab
   return
 receive_and_display:
-  retlw   0x30
+  retlw   0x31
   retlw   0x65
   retlw   0x63
   retlw   0x65
