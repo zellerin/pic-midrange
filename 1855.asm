@@ -345,11 +345,11 @@ hw_receive:
   addwf   0x7b, 0x1
   movlw   0x08
   subwf   0x7b, 0x0
-  btfss   0x03, 0x0
-  goto    0x01a4
-  nop
-  nop
+  btfsc   0x03, 0x0
   clrf    0x7b
+  nop
+  nop
+  nop
   nop
   movlw   0x01
   movwf   0x70
@@ -358,7 +358,7 @@ hw_receive:
   addwf   0x39, 0x1
   return
 ;;;; put string in 74/75 w/o newline
-  goto    0x01b8
+  nop
 ;;;; put string from fsr0
 old_01ab:
   movf    0x74, 0x0
