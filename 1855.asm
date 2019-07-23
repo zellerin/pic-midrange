@@ -155,12 +155,12 @@ main:
   nop
   bsf     0x0b, 0x7 	; intcon
   bsf     0x0b, 0x6	; intcon
-  movlw   0xc3	; puts argument start
+  movlw   low(receive_and_display)
   movwf   0x74
-  movlw   0x81
+  movlw   high(receive_and_display)
   movwf   0x75
   nop
-  call    puts	; puts(0x81c3)
+  call    puts
   nop
   nop
 main_loop
@@ -360,6 +360,7 @@ hw_receive:
 ;;;; put string in 74/75 w/o newline
   goto    0x01b8
 ;;;; put string from fsr0
+old_01ab:
   movf    0x74, 0x0
   movwf   0x04
   movf    0x75, 0x0
@@ -372,7 +373,7 @@ hw_receive:
   addwf   0x74, 0x1
   movlw   0x00
   addwfc  0x75, 0x1
-  goto    0x01b8
+  nop
 put_string_b
   movf    0x74, 0x0
   movwf   0x04 ; fsr0
@@ -380,12 +381,12 @@ put_string_b
   movwf   0x05
   moviw   0++
   btfss   0x03, 0x2
-  goto    0x01c0
-  goto    0x01c1
-  goto    0x01ab
-  goto    0x01c2
+  goto    old_01ab
+  nop
+  nop
+  nop
   return
-;;; Receive & display
+receive_and_display:
   retlw   0x52
   retlw   0x65
   retlw   0x63
