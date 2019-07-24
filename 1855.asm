@@ -202,42 +202,37 @@ pin_init:
   clrf    0x16 	; LATA
   clrf    0x17	; LATB
   movlw   0x41
-  movwf   0x18	; LATC
-  movlw   0xf0
+  movwf   0x18	; LATC - C7 high (PWM), C0 high (TX)
+  movlw   0xf0	; A0 to A3 output (LED), A4-A7 in (POT, SW1, Alarm)
   movwf   0x11	; TRISA
   movlw   0xff	;
-  movwf   0x12	; trisb
+  movwf   0x12	; trisb - all input
   movlw   0xfe
-  movwf   0x13	; trisc
+  movwf   0x13	; trisc - only C0 (TX) output
   movlw   0xfd
-  movlb   0x1e
-  movwf   0x4e	; anselc
+  movlb   0x1e  ; ----------- BANK 30, 0xf.. -----------------
+  movwf   0x4e	; anselc (why so?)
   movlw   0xff
-  movwf   0x43	; anselb
-  movlw   0xff
-  movwf   0x38	; ansela
+  movwf   0x43	; anselb - all digital
+  movwf   0x38	; ansela - all digital
   movlw   0x08
   movwf   0x65	; wpue
   movlw   0xff
   movwf   0x44	; wpub
   movlw   0xff
   movwf   0x39	; wpua
-  movlw   0xff
   movwf   0x4f	; wpuc
   clrf    0x3a	; odcona
   clrf    0x45	; odconb
   clrf    0x50	; odconc
-  movlw   0xff
   movwf   0x3b	; slrcona
-  movlw   0xff
   movwf   0x46	; slrconb
-  movlw   0xff
   movwf   0x51	; slrconc
-  movlw   0x10
+  movlw   0x10	; RC0
   movwf   0x20	; rc0pps
-  movlw   0x11
-  movlb   0x1d	;
-  movwf   0x4b	; RXPPS
+  movlw   0x11	; RC1
+  movlb   0x1d	; ------------ BANK 29, 0xE8. ----------------
+  movwf   0x4b	; RXPPS, def RC7
   return
 transmit_isr:
   movlw   0x08
