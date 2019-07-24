@@ -144,9 +144,8 @@ main:
   call    puts
 main_loop
   call    do_receive
-  movwf   0x79
-  movf    0x79, 0x0
-  movlb   0x00
+  movlb   0
+  movwf   0x16			; LATA
   call    write_char
   movlw   0x0d
   call    write_char
@@ -158,12 +157,7 @@ main_loop
   call    write_char
   movlw   0x3e
   call    write_char
-  movlb   0x00
-  movf    0x46, 0x0
-  movwf   0x16
   goto    main_loop
-  goto    main_loop
-  goto    init
 write_char:
   movwf   0x72
 write_char_2
@@ -290,11 +284,8 @@ hw_receive:
   subwf   rxhead, 0x0
   btfsc   0x03, 0x0
   clrf    rxhead
-  movlw   0x01
-  movwf   0x70
-  movf    0x70, 0x0
   movlb   0x00
-  addwf   rxcount, 0x1
+  incf    rxcount, F
   return
 ;;;; put string in 74/75 w/o newline
 ;;;; put string from fsr0
