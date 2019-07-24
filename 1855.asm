@@ -8,37 +8,38 @@
   btfsc   0x19, 0x4	; PIE3.TXIE
   btfss   0x0f, 0x4	; PIR3.TXIF
   goto    int_rc
-  call    transmit_isr
+
+transmit_isr:
+  movlw   0x08
+  movlb   0x00
+  subwf   buf2size, 0x0
+  btfsc   0x03, 0x0
+  goto    all_sent		; 8 <= bufsize
+  movf    0x3a, 0x0 		; FSR1=0x30+*0x3a
+  addlw   0x30
+  movwf   0x06
+  clrf    0x07
+  movf    0x01, 0x0		; W=INDF1
+  movlb   0x02
+  movwf   0x1a			; TXREG
+  movlb   0x00
+  incf    0x3a, 0x1
+  movlw   0x08
+  subwf   0x3a, 0x0
+  btfsc   0x03, 0x0
+  clrf    0x3a
+  incf    buf2size, 0x1
   retfie
+all_sent:
+  movlb   0x0e
+  bcf     0x19, 0x4		; PIE3.TXIE
+  retfie
+
 int_rc:
   btfsc   0x19, 0x5	; PIE3.RCIE
   btfss   0x0f, 0x5	; PIR3.RCIF
   retfie
-  call    isr_receive
-int_end
-  retfie
 
-rxtail equ 0x7a
-rxcount equ 0x39
-rxhead equ 0x7b
-
-buf2size equ 0x45
-
-init:
-  clrf    rxtail
-  clrf    rxhead
-  clrf    0x7c
-;;; FSR0 = 0x20
-  movlw   0x20
-  movwf   0x04
-  movlw   0x00
-  movwf   0x05
-  movlw   0x1b
-  call    system_init_2
-  movlb   0x00
-  goto    main
-
-isr_receive:
   movf    rxhead, 0x0
   addlw   0x20
   movwf   0x06
@@ -61,7 +62,29 @@ old_a0:
   goto    old_b0
   call    hw_receive
 old_b0:
-  goto    hw_receive
+  call    hw_receive
+  retfie
+
+rxtail equ 0x7a
+rxcount equ 0x39
+rxhead equ 0x7b
+
+buf2size equ 0x45
+
+init:
+  clrf    rxtail
+  clrf    rxhead
+  clrf    0x7c
+;;; FSR0 = 0x20
+  movlw   0x20
+  movwf   0x04
+  movlw   0x00
+  movwf   0x05
+  movlw   0x1b
+  call    system_init_2
+  movlb   0x00
+  goto    main
+
 
 ;;; receive
 do_receive:
@@ -167,31 +190,6 @@ old_126:
 old_13f:
   movlb   0x0e
   bsf     0x19, 0x4	; PIE3.TXIE
-  return
-transmit_isr:
-  movlw   0x08
-  movlb   0x00
-  subwf   buf2size, 0x0
-  btfsc   0x03, 0x0
-  goto    all_sent		; 8 <= bufsize
-  movf    0x3a, 0x0 		; FSR1=0x30+*0x3a
-  addlw   0x30
-  movwf   0x06
-  clrf    0x07
-  movf    0x01, 0x0		; W=INDF1
-  movlb   0x02
-  movwf   0x1a			; TXREG
-  movlb   0x00
-  incf    0x3a, 0x1
-  movlw   0x08
-  subwf   0x3a, 0x0
-  btfsc   0x03, 0x0
-  clrf    0x3a
-  incf    buf2size, 0x1
-  return
-all_sent:
-  movlb   0x0e
-  bcf     0x19, 0x4		; PIE3.TXIE
   return
 hw_receive:
   movlb   0x02
