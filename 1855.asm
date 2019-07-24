@@ -37,35 +37,6 @@ init:
   call    system_init_2
   movlb   0x00
   goto    main
-eusart_init:
-  movlb   0x0e
-  bcf     0x19, 0x5	; pie3 - rcie
-  movlb   0x0e
-  bcf     0x19, 0x4	; pie3 - 0719
-;;; USART
-  movlw   0x08
-  movlb   0x02
-  movwf   0x1f 	; baud1con
-  movlw   0x90
-  movwf   0x1d	; rcsta
-  movlw   0x24
-  movwf   0x1e	; txsta
-  movlw   0x19
-  movwf   0x1b	; spbrgl
-  clrf    0x1c	; spbrgh
-  movlb   0x00
-  clrf    0x38	; txhead
-  clrf    0x7c	; txtail
-  clrf    0x3a	; buffer size remaining
-  movlw   0x08
-  movwf   0x73
-  movwf   buf2size
-  clrf    rxhead	; rxhead
-  clrf    rxtail	; rxtail
-  clrf    rxcount	; rxcount
-  movlb   0x0e
-  bsf     0x19, 0x5	; PIE3.RCIE
-	return
 
 isr_receive:
   movf    rxhead, 0x0
@@ -197,43 +168,6 @@ old_13f:
   movlb   0x0e
   bsf     0x19, 0x4	; PIE3.TXIE
   return
-pin_init:
-  movlb   0x00
-  clrf    0x16 	; LATA
-  clrf    0x17	; LATB
-  movlw   0x41
-  movwf   0x18	; LATC - C7 high (PWM), C0 high (TX)
-  movlw   0xf0	; A0 to A3 output (LED), A4-A7 in (POT, SW1, Alarm)
-  movwf   0x11	; TRISA
-  movlw   0xff	;
-  movwf   0x12	; trisb - all input
-  movlw   0xfe
-  movwf   0x13	; trisc - only C0 (TX) output
-  movlw   0xfd
-  movlb   0x1e  ; ----------- BANK 30, 0xf.. -----------------
-  movwf   0x4e	; anselc (why so?)
-  movlw   0xff
-  movwf   0x43	; anselb - all digital
-  movwf   0x38	; ansela - all digital
-  movlw   0x08
-  movwf   0x65	; wpue
-  movlw   0xff
-  movwf   0x44	; wpub
-  movlw   0xff
-  movwf   0x39	; wpua
-  movwf   0x4f	; wpuc
-  clrf    0x3a	; odcona
-  clrf    0x45	; odconb
-  clrf    0x50	; odconc
-  movwf   0x3b	; slrcona
-  movwf   0x46	; slrconb
-  movwf   0x51	; slrconc
-  movlw   0x10	; RC0
-  movwf   0x20	; rc0pps
-  movlw   0x11	; RC1
-  movlb   0x1d	; ------------ BANK 29, 0xE8. ----------------
-  movwf   0x4b	; RXPPS, def RC7
-  return
 transmit_isr:
   movlw   0x08
   movlb   0x00
@@ -305,19 +239,55 @@ receive_and_display:
   retlw   0x61
   retlw   0x79
   retlw   0x00
-system_init:
-  call    clean_pmd
-  call    pin_init
-  call    osc_init
-  call    eusart_init
-  return
-puts:
-  call    put_string_b
-  movlw   0x0a
-  call    write_char_3
-  return
 
-osc_init:
+system_init:
+;;; clean_pmd:
+  movlb   0x0f
+  clrf    0x16 	;pmd0 - pmd5
+  clrf    0x17
+  clrf    0x18
+  clrf    0x19
+  clrf    0x1a
+  clrf    0x1b
+
+;;; pin_init:
+  movlb   0x00
+  clrf    0x16 	; LATA
+  clrf    0x17	; LATB
+  movlw   0x41
+  movwf   0x18	; LATC - C7 high (PWM), C0 high (TX)
+  movlw   0xf0	; A0 to A3 output (LED), A4-A7 in (POT, SW1, Alarm)
+  movwf   0x11	; TRISA
+  movlw   0xff	;
+  movwf   0x12	; trisb - all input
+  movlw   0xfe
+  movwf   0x13	; trisc - only C0 (TX) output
+  movlw   0xfd
+  movlb   0x1e  ; ----------- BANK 30, 0xf.. -----------------
+  movwf   0x4e	; anselc (why so?)
+  movlw   0xff
+  movwf   0x43	; anselb - all digital
+  movwf   0x38	; ansela - all digital
+  movlw   0x08
+  movwf   0x65	; wpue
+  movlw   0xff
+  movwf   0x44	; wpub
+  movlw   0xff
+  movwf   0x39	; wpua
+  movwf   0x4f	; wpuc
+  clrf    0x3a	; odcona
+  clrf    0x45	; odconb
+  clrf    0x50	; odconc
+  movwf   0x3b	; slrcona
+  movwf   0x46	; slrconb
+  movwf   0x51	; slrconc
+  movlw   0x10	; RC0
+  movwf   0x20	; rc0pps
+  movlw   0x11	; RC1
+  movlb   0x1d	; ------------ BANK 29, 0xE8. ----------------
+  movwf   0x4b	; RXPPS, def RC7
+
+;;; osc_init:
   movlw   0x62
   movlb   0x11
   movwf   0x0d 	; osccon1
@@ -326,16 +296,44 @@ osc_init:
   movlw   0x02
   movwf   0x13	; oscfrq
   clrf    0x12	; osctune
+
+;;; eusart_init:
+  movlb   0x0e
+  bcf     0x19, 0x5	; pie3 - rcie
+  movlb   0x0e
+  bcf     0x19, 0x4	; pie3 - 0719
+;;; USART
+  movlw   0x08
+  movlb   0x02
+  movwf   0x1f 	; baud1con
+  movlw   0x90
+  movwf   0x1d	; rcsta
+  movlw   0x24
+  movwf   0x1e	; txsta
+  movlw   0x19
+  movwf   0x1b	; spbrgl
+  clrf    0x1c	; spbrgh
+  movlb   0x00
+  clrf    0x38	; txhead
+  clrf    0x7c	; txtail
+  clrf    0x3a	; buffer size remaining
+  movlw   0x08
+  movwf   0x73
+  movwf   buf2size
+  clrf    rxhead	; rxhead
+  clrf    rxtail	; rxtail
+  clrf    rxcount	; rxcount
+  movlb   0x0e
+  bsf     0x19, 0x5	; PIE3.RCIE
   return
-clean_pmd:
-  movlb   0x0f
-  clrf    0x16 	;pmd0 - pmd5
-  clrf    0x17
-  clrf    0x18
-  clrf    0x19
-  clrf    0x1a
-  clrf    0x1b
+
+
+puts:
+  call    put_string_b
+  movlw   0x0a
+  call    write_char_3
   return
+
 system_init_2
   clrwdt
 frame_error_handle:
