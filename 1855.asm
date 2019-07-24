@@ -22,9 +22,11 @@ rxtail equ 0x7a
 rxcount equ 0x39
 rxhead equ 0x7b
 
+buf2size equ 0x45
+
 init:
   clrf    rxtail
-  clrf    0x7b
+  clrf    rxhead
   clrf    0x7c
 ;;; FSR0 = 0x20
   movlw   0x20
@@ -33,7 +35,6 @@ init:
   movwf   0x05
   movlw   0x1b
   call    system_init_2
-  bcf     0x7e, 0x0
   movlb   0x00
   goto    main
 eusart_init:
@@ -58,9 +59,8 @@ eusart_init:
   clrf    0x3a	; buffer size remaining
   movlw   0x08
   movwf   0x73
-  movf    0x73, 0x0
-  movwf   0x45
-  clrf    0x7b	; rxhead
+  movwf   buf2size
+  clrf    rxhead	; rxhead
   clrf    rxtail	; rxtail
   clrf    rxcount	; rxcount
   movlb   0x0e
@@ -68,10 +68,10 @@ eusart_init:
 	return
 
 isr_receive:
-  movf    0x7b, 0x0
+  movf    rxhead, 0x0
   addlw   0x20
   movwf   0x06
-  clrf    0x07  ; FSR1 = 0x2*0x7b
+  clrf    0x07  ; FSR1 = 0x2*rxhead
   clrf    0x01  ; INDF1
   movlb   0x02
   btfss   0x1d, 0x2 ; RCSTA.FERR
@@ -147,8 +147,6 @@ main_loop
   movwf   0x79
   movf    0x79, 0x0
   movlb   0x00
-  movwf   0x46
-  movf    0x46, 0x0
   call    write_char
   movlw   0x0d
   call    write_char
@@ -170,7 +168,7 @@ write_char:
   movwf   0x72
 write_char_2
   movlb   0x00
-  movf    0x45, 0x0
+  movf    buf2size, 0x0
   btfsc   0x03, 0x2	; while buffer remaining
   goto    write_char_2
   movlb   0x0e
@@ -201,7 +199,7 @@ old_126:
 
   movlw   0x01
   movlb   0x00
-  subwf   0x45, 0x1
+  subwf   buf2size, 0x1
 old_13f:
   movlb   0x0e
   bsf     0x19, 0x4	; PIE3.TXIE
@@ -251,7 +249,7 @@ pin_init:
 transmit_isr:
   movlw   0x08
   movlb   0x00
-  subwf   0x45, 0x0
+  subwf   buf2size, 0x0
   btfsc   0x03, 0x0
   goto    old_18b
   movf    0x3a, 0x0
@@ -273,7 +271,7 @@ transmit_isr:
   movlw   0x01
   movwf   0x70
   movf    0x70, 0x0
-  addwf   0x45, 0x1
+  addwf   buf2size, 0x1
   return
 old_18b:
   movlb   0x0e
@@ -281,22 +279,20 @@ old_18b:
   return
 hw_receive:
   movlb   0x02
-  movf    0x19, 0x0  ; RCREG
-  movwf   0x70
-  movf    0x7b, 0x0
+  movf    rxhead, 0x0 		; FSR2 = rxhead+0x28
   addlw   0x28
   movwf   0x06
   clrf    0x07
-  movf    0x70, 0x0
-  movwf   0x01
+  movf    0x19, 0x0  ; RCREG to 0x70
+  movwf   0x01			; RCREG to INDF1
   movlw   0x01
   movwf   0x70
   movf    0x70, 0x0
-  addwf   0x7b, 0x1
+  addwf   rxhead, 0x1
   movlw   0x08
-  subwf   0x7b, 0x0
+  subwf   rxhead, 0x0
   btfsc   0x03, 0x0
-  clrf    0x7b
+  clrf    rxhead
   movlw   0x01
   movwf   0x70
   movf    0x70, 0x0
