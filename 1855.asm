@@ -2,22 +2,20 @@
   goto    init
 ;;; interrupt
   org 4
-  bsf     0x7e, 0x0
   btfss   0x0b, 0x6	; INTCON.PEIE
-  goto    int_end
+  retfie
   movlb   0x0e
   btfsc   0x19, 0x4	; PIE3.TXIE
   btfss   0x0f, 0x4	; PIR3.TXIF
   goto    int_rc
   call    transmit_isr
-  goto    int_end
+  retfie
 int_rc:
   btfsc   0x19, 0x5	; PIE3.RCIE
   btfss   0x0f, 0x5	; PIR3.RCIF
-  goto    int_end
+  retfie
   call    isr_receive
 int_end
-  bcf     0x7e, 0x0
   retfie
 
 rxtail equ 0x7a
