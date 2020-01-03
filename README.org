@@ -64,8 +64,8 @@ template can be used:
   	 decf FSR, f
 	 movf INDF, w
    #+END_SRC
- 
-* GPsim 
+
+* GPsim
 * GPsim needs to create eeprom file
 Apparently, gpsim is not able to use programming hex file content to
 populate EEPROM. This is workaround to prepare special file.
@@ -79,7 +79,7 @@ populate EEPROM. This is workaround to prepare special file.
    for val = (aref src i)
    when use do (vector-push-extend val res)
    else do (assert (zerop val))
-   finally 
+   finally
    (intel-hex:write-hex-to-file res "demo/mem.hex" :if-exists :supersede))
 #+END_SRC
 
@@ -130,15 +130,15 @@ written. However, the word *may* and *will* get lost at one point of time
 =03ff= is called.
 
 ** Saving OSCCAL word
-I can read current calibration with 
+I can read current calibration with
 
-#+BEGIN_SRC shell :var PICNAME="PIC12F675" pk2cmd="/home/zellerin/staging/pickit/pk2cmdv1.20LinuxMacSource/pk2cmd" :results verbatim :exports both 
+#+BEGIN_SRC shell :var PICNAME="PIC12F675" pk2cmd="/home/zellerin/staging/pickit/pk2cmdv1.20LinuxMacSource/pk2cmd" :results verbatim :exports both
 ${pk2cmd} /P${PICNAME} /GP0x3ff-0x3ff
 #+END_SRC
 
 #+RESULTS:
 : Program Memory
-: 000003FF 003412  
+: 000003FF 003412
 
 If you get word starting with 0x34, you are fine. 0x3fff means it was
 cleared out. Anything else is strange.
@@ -152,3 +152,176 @@ provided, not just osccal value.
 As I did not remember to jot down the value originally, I had to
 improvise. The uart demo varies osccal and prints it out, so what
 works can be seen.
+
+* Emacs lispization
+#+begin_src emacs-lisp
+  (defun asm-gen (label op comment pars)
+    (if label
+	(insert label ": ")
+      (insert "\t"))
+    (when op
+      (insert op (if (or comment pars) " " ""))
+      (insert (mapconcat 'identity pars ", ")))
+    (when comment
+      (insert
+       (if (or op label) " ;; " ";;; ")
+       comment))
+    (insert "\n"))
+
+  (defun asm-comment (c)
+    (asm-gen nil nil c nil))
+
+  (defun asm-op (op &rest args)
+    (asm-gen nil op nil args))
+
+  (defun asm-label (l)
+    (asm-gen l nil nil nil))
+
+  (defun str (a)
+    (concat "\"" a "\""))
+#+end_src
+
+* Forthification
+- Number and known variable name push to compile time stack
+- Known opcode compiles using operands from compile time stack
+#+begin_src emacs-lisp
+  (defun forth* (args)
+    (let (o stack fns vars immediate)
+      (while (setq o (pop args))
+	(cl-case o
+	  (: (setq o (pop args))
+	     (asm-label (symbol-name o))
+	     (push o fns))
+	  (var (setq o (pop args))
+	       (asm-label (symbol-name o))
+	       (push o vars))
+	  ;; one string parameter
+	  ((include title) (asm-op (symbol-name o) (str (pop stack))))
+	  ;; zero parameters
+	  ((udata_shr code) (asm-op (symbol-name o)))
+	  ;; one parameter
+	  ((res movlw movwf radix clrf addlw) (asm-op (symbol-name o) (pop stack)))
+	  ;; two parameters
+	  ((btfsc) (asm-op (symbol-name o) (pop stack) (pop stack)))
+	  ;; implied ,F
+	  ((decfsz) (asm-op (symbol-name o) (pop stack) "F"))
+	  ;; specials
+	  ((global extern)
+	   (setq fns (append (car stack) fns))
+	   (apply 'asm-op (symbol-name o) (mapcar 'symbol-name (pop stack))))
+	  ((literal) (push (pop args) stack))
+	  ((*) (asm-comment (pop args)))
+	  (% (asm-op "return"))
+	  (dec (forth "DEC" radix))
+	  (octet (forth ".1" res))
+	  (t (cond
+	      ((consp o) (apply (car o) (cdr o)))
+	      ((stringp o) (push o stack))
+	      ((integerp o) (push (format "0x%x" o) stack))
+	      ((member o vars) (push (symbol-name o) stack))
+	      ((member o fns) (asm-op (if (not (eq (car args) '%)) "call" (pop args) "goto") (symbol-name o)))
+	      (t (error "Unknown op %s" o))))))))
+#+end_src
+
+#+RESULTS:
+: forth*
+
+#+begin_src emacs-lisp
+  (defmacro forth (&rest args)
+    `(forth* ',args))
+#+end_src
+
+#+begin_src emacs-lisp
+  (defun asm-gen-test ()
+    (interactive)
+    (switch-to-buffer "test")
+    (pic-asm-mode)
+    (forth
+     "config.h" include "lcd module test" title dec
+     literal ("mswait" "short_wait") global
+     udata_shr
+     ,* "used by short_wait as a parameter"
+     var duration octet
+
+     code
+     ,* "burn duration*3+2 ops; on 4Mhz, op is 1 µsec, so max is 770 µsec"
+     : short_wait duration movwf
+     ,* "burn duration*3+1 ops where duration is 1 to 256"
+     : short_wait_dur duration decfsz  short_wait_dur % %
+     ,* "wait about W*(256*3+2+8) ops" * "i.e. about W*778 µsec on 4Mhz"
+     : mswait duration clrf short_wait_dur #xff addlw "Z" "STATUS" btfsc %
+     mswait %
+
+     (asm-op "end")))
+#+end_src
+
+#+RESULTS:
+: asm-gen-test
+
+#+begin_src emacs-lisp
+  (defun asm-gen-lcd ()
+    (interactive)
+    (switch-to-buffer "test")
+    (pic-asm-mode)
+    (forth
+     "config.h" include "lcd module low-level" title dec
+     udata_shr
+     var scratch octet
+     var nibble octet
+
+     code
+     literal (eeprom_put_fn push_high_nibble) global
+     literal (mswait) extern
+     : eeprom_put_fn
+     : put nibble movwf 3 movlw mswait push_high_nibble push_high_nibble %
+
+
+
+     (asm-op "end")))
+#+end_src
+
+#+RESULTS:
+: asm-gen-lcd
+
+#+begin_src emacs-lisp
+  (defun asm-gen-test-old ()
+    (interactive)
+    (switch-to-buffer "test")
+    (forth
+     "config.h" include
+     "lcd module test" title
+     dec
+     literal ("mswait" "short_wait") global
+     udata_shr
+     : "duration"
+     (asm-comment "used by short_wait as a parameter")
+     ".1" res
+
+     code
+     : "mswait"
+     (asm-comment "wait about W*(256*3+2+8) ops")
+     (asm-comment "i.e. about W*778 µsec on 4Mhz")
+     (asm-op "clrf" "duration")
+     (asm-op "call" "short_wait_dur")
+     (asm-op "addlw" "0xff")
+     (asm-op "btfsc" "STATUS" "Z")
+     (asm-op "return")
+     (asm-op "goto" "mswait")
+     (asm-label "short_wait")
+     (asm-comment "burn duration*3+2 ops")
+     (asm-comment "on 4Mhz, op is 1 µsec")
+     (asm-comment "so max is 770 µsec")
+     (asm-op "movwf" "duration")
+     (asm-label "short_wait_dur")
+     (asm-comment "burn duration*3+1 ops")
+     (asm-comment "duration is 1 to 256")
+     (asm-op "decfsz" "duration" "f")
+     (asm-op "goto" "short_wait_dur")
+     (asm-op "return")
+
+     (asm-op "end")))
+
+#+end_src
+
+#+RESULTS:
+: asm-gen-test-old
